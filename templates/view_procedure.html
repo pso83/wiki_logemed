@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails de la Procédure</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">{{ procedure[2] }}</h1> <!-- Titre de la procédure -->
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Description</h5>
+                <p class="card-text">{{ procedure[3] }}</p>
+
+                <h5 class="card-title mt-4">Protocole de Résolution</h5>
+                <p class="card-text">{{ procedure[4] }}</p>
+
+                <h5 class="card-title mt-4">Protocole de Vérification</h5>
+                <p class="card-text">{{ procedure[5] }}</p>
+
+                <h5 class="card-title mt-4">Référence Ticket</h5>
+                <p class="card-text">{{ procedure[9] }}</p>
+
+                <h5 class="card-title mt-4">Mots-clés</h5>
+                <p class="card-text">{{ procedure[1] }}</p>
+
+                <h5 class="card-title mt-4">Acteur</h5>
+                <p class="card-text">{{ procedure[6] }}</p>
+
+                <h5 class="card-title mt-4">Vérificateur</h5>
+                <p class="card-text">{{ procedure[7] }}</p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/" class="btn btn-primary">Retour à la liste</a>
+        </div>
+
+        {% if procedure[10] %}  <!-- Assure-toi que l'index correspond à la colonne 'piece_jointe' -->
+    <h5 class="card-title mt-4">Pièce Jointe</h5>
+    <a href="{{ url_for('uploaded_file', filename=procedure[10]) }}" class="btn btn-outline-secondary" target="_blank">Voir la pièce jointe</a>
+{% endif %}
+
+    </div>
+</body>
+</html>
