@@ -31,9 +31,18 @@ def home():
     conn = get_db_connection()
     cursor = conn.cursor()
     if query:
-        cursor.execute("SELECT id, titre, description, mots_cles, reference_ticket FROM procedures WHERE mots_cles LIKE %s", ('%' + query + '%',))
+        cursor.execute("""
+            SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, a.nom 
+            FROM procedures p
+            LEFT JOIN applications a ON p.application_id = a.id
+            WHERE p.mots_cles LIKE %s
+        """, ('%' + query + '%',))
     else:
-        cursor.execute("SELECT id, titre, description, mots_cles, reference_ticket FROM procedures")
+        cursor.execute("""
+            SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, a.nom 
+            FROM procedures p
+            LEFT JOIN applications a ON p.application_id = a.id
+        """)
     procedures = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -50,6 +59,7 @@ def add_procedure():
         acteur = request.form.get('acteur', '')
         verificateur = request.form.get('verificateur', '')
         reference_ticket = request.form.get('reference_ticket', '')
+        utilisateur = request.form.get('utilisateur', '')
 
         # Vérification et conversion de l'application_id
         application_id_str = request.form.get('application_id', '').strip()
@@ -64,9 +74,9 @@ def add_procedure():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO procedures (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe) 
-                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe_filename))
+        cursor.execute('''INSERT INTO procedures (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe, utilisateur) 
+                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe_filename, utilisateur))
         conn.commit()
         cursor.close()
         conn.close()
@@ -79,6 +89,41 @@ def add_procedure():
     cursor.close()
     conn.close()
     return render_template('add_procedure.html', applications=applications)
+
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit_procedure(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        mots_cles = request.form.get('mots_cles', '')
+        titre = request.form.get('titre', '')
+        description = request.form.get('description', '')
+        protocole_resolution = request.form.get('protocole_resolution', '')
+        protocole_verification = request.form.get('protocole_verification', '')
+        acteur = request.form.get('acteur', '')
+        verificateur = request.form.get('verificateur', '')
+        reference_ticket = request.form.get('reference_ticket', '')
+        utilisateur = request.form.get('utilisateur', '')
+
+        application_id_str = request.form.get('application_id', '').strip()
+        application_id = int(application_id_str) if application_id_str.isdigit() else None
+
+        cursor.execute('''UPDATE procedures 
+                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, application_id=%s, reference_ticket=%s, utilisateur=%s
+                          WHERE id=%s''',
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, utilisateur, id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return redirect(url_for('home'))
+
+    cursor.execute("SELECT * FROM procedures WHERE id = %s", (id,))
+    procedure = cursor.fetchone()
+    cursor.execute("SELECT * FROM applications")
+    applications = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('edit_procedure.html', procedure=procedure, applications=applications)
 
 @app.route('/delete/<int:id>', methods=['POST'])
 def delete_procedure(id):

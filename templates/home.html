@@ -28,25 +28,28 @@
         <th scope="col">Description</th>
         <th scope="col">Mots-clés</th>
         <th scope="col">Référence Ticket</th>
-        <th scope="col">Actions</th>
+        <th scope="col">Application</th>
+        <th scope="col" style="width: 150px;">Actions</th>
     </tr>
-                </thead>
-                <tbody>
-                    {% for procedure in procedures %}
-                        <tr>
-                            <td>{{ procedure[1] }}</td> <!-- Titre -->
-                            <td>{{ procedure[2] }}</td> <!-- Description -->
-                            <td>{{ procedure[3] }}</td> <!-- Mots-clés -->
-                            <td>{{ procedure[4] }}</td> <!-- Référence Ticket -->
-                            <td>
-                                <a href="/view/{{ procedure[0] }}" class="btn btn-info btn-sm">Afficher</a>
-                                <form method="POST" action="/delete/{{ procedure[0] }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
+</thead>
+        <tbody>
+            {% for procedure in procedures %}
+                <tr>
+                    <td>{{ procedure[1] }}</td> <!-- Titre -->
+                    <td>{{ procedure[2] }}</td> <!-- Description -->
+                    <td>{{ procedure[3] }}</td> <!-- Mots-clés -->
+                    <td>{{ procedure[4] }}</td> <!-- Référence Ticket -->
+                    <td>{{ procedure[5] or 'Non spécifiée' }}</td> <!-- Nom de l'application -->
+                    <td>
+                        <a href="/view/{{ procedure[0] }}" class="btn btn-info btn-sm">Afficher</a>
+                        <a href="/edit/{{ procedure[0] }}" class="btn btn-warning btn-sm">Modifier</a>
+                        <form method="POST" action="/delete/{{ procedure[0] }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
             </table>
         {% else %}
             <p class="text-center mt-4">Aucune procédure trouvée.</p>
