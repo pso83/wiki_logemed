@@ -1,32 +1,42 @@
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-from flask_mysqldb import MySQL
+import MySQLdb
 import os
 
 app = Flask(__name__)
 
 # Configuration de la base de données
-app.config['MYSQL_HOST'] = '194.164.60.164'
-app.config['MYSQL_USER'] = 'devlog'
-app.config['MYSQL_PASSWORD'] = '123456Sou_log'
-app.config['MYSQL_DB'] = 'wiki_db'
+DB_HOST = '194.164.60.164'
+DB_USER = 'devlog'
+DB_PASSWORD = '123456Sou_log'
+DB_NAME = 'wiki_db'
+
+# Fonction pour obtenir une connexion MySQL
+def get_db_connection():
+    return MySQLdb.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        passwd=DB_PASSWORD,
+        db=DB_NAME,
+        charset='utf8mb4'
+    )
 
 # Configuration pour les pièces jointes
 app.config['UPLOAD_FOLDER'] = 'uploads'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-mysql = MySQL(app)
-
 @app.route('/')
 def home():
     query = request.args.get('query')
-    cursor = mysql.connection.cursor()
+    conn = get_db_connection()
+    cursor = conn.cursor()
     if query:
         cursor.execute("SELECT id, titre, description, mots_cles, reference_ticket FROM procedures WHERE mots_cles LIKE %s", ('%' + query + '%',))
     else:
         cursor.execute("SELECT id, titre, description, mots_cles, reference_ticket FROM procedures")
     procedures = cursor.fetchall()
     cursor.close()
+    conn.close()
     return render_template('home.html', procedures=procedures)
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -52,34 +62,42 @@ def add_procedure():
             piece_jointe_filename = piece_jointe.filename[:255]  # Limiter à 255 caractères
             piece_jointe.save(os.path.join(app.config['UPLOAD_FOLDER'], piece_jointe_filename))
 
-        cursor = mysql.connection.cursor()
+        conn = get_db_connection()
+        cursor = conn.cursor()
         cursor.execute('''INSERT INTO procedures (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe) 
                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
                           (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe_filename))
-        mysql.connection.commit()
+        conn.commit()
         cursor.close()
+        conn.close()
         return redirect(url_for('home'))
 
-    cursor = mysql.connection.cursor()
+    conn = get_db_connection()
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM applications")
     applications = cursor.fetchall()
     cursor.close()
+    conn.close()
     return render_template('add_procedure.html', applications=applications)
 
 @app.route('/delete/<int:id>', methods=['POST'])
 def delete_procedure(id):
-    cursor = mysql.connection.cursor()
+    conn = get_db_connection()
+    cursor = conn.cursor()
     cursor.execute("DELETE FROM procedures WHERE id = %s", (id,))
-    mysql.connection.commit()
+    conn.commit()
     cursor.close()
+    conn.close()
     return redirect(url_for('home'))
 
 @app.route('/view/<int:id>')
 def view_procedure(id):
-    cursor = mysql.connection.cursor()
+    conn = get_db_connection()
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM procedures WHERE id = %s", (id,))
     procedure = cursor.fetchone()
     cursor.close()
+    conn.close()
     return render_template('view_procedure.html', procedure=procedure)
 
 @app.route('/uploads/<filename>')
