@@ -40,10 +40,13 @@
         </div>
 
         {% if procedure[10] %}  <!-- Assure-toi que l'index correspond à la colonne 'piece_jointe' -->
-    <h5 class="card-title mt-4">Pièce Jointe</h5>
-    <a href="{{ url_for('uploaded_file', filename=procedure[10]) }}" class="btn btn-outline-secondary" target="_blank">Voir la pièce jointe</a>
-{% endif %}
-
+            <h5 class="card-title mt-4">Pièces Jointes</h5>
+            <ul>
+                {% for fichier in procedure[10].split(',') %}
+                    <li><a href="{{ url_for('uploaded_file', filename=fichier) }}" target="_blank">{{ fichier }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     </div>
 </body>
 </html>

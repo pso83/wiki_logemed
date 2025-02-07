@@ -31,12 +31,15 @@ def home():
     conn = get_db_connection()
     cursor = conn.cursor()
     if query:
-        cursor.execute("""
+        keywords = query.split('#')
+        keywords = [kw.strip() for kw in keywords if kw.strip()]
+        search_query = " OR ".join(["p.mots_cles LIKE %s" for _ in keywords])
+        cursor.execute(f"""
             SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, a.nom 
             FROM procedures p
             LEFT JOIN applications a ON p.application_id = a.id
-            WHERE p.mots_cles LIKE %s
-        """, ('%' + query + '%',))
+            WHERE {search_query}
+        """, tuple(f'%#{kw}%' for kw in keywords))
     else:
         cursor.execute("""
             SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, a.nom 
@@ -66,17 +69,20 @@ def add_procedure():
         application_id = int(application_id_str) if application_id_str.isdigit() else None
 
         # Gestion des pièces jointes
-        piece_jointe = request.files.get('piece_jointe')
-        piece_jointe_filename = ''
-        if piece_jointe and piece_jointe.filename:
-            piece_jointe_filename = piece_jointe.filename[:255]  # Limiter à 255 caractères
-            piece_jointe.save(os.path.join(app.config['UPLOAD_FOLDER'], piece_jointe_filename))
+        pieces_jointes = request.files.getlist('pieces_jointes')
+        pieces_jointes_filenames = []
+        for piece in pieces_jointes:
+            if piece and piece.filename:
+                filename = piece.filename[:255]
+                piece.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                pieces_jointes_filenames.append(filename)
+        pieces_jointes_str = ','.join(pieces_jointes_filenames)
 
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''INSERT INTO procedures (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe, utilisateur) 
                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe_filename, utilisateur))
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, pieces_jointes_str, utilisateur))
         conn.commit()
         cursor.close()
         conn.close()
@@ -108,10 +114,20 @@ def edit_procedure(id):
         application_id_str = request.form.get('application_id', '').strip()
         application_id = int(application_id_str) if application_id_str.isdigit() else None
 
+        # Gestion des nouvelles pièces jointes
+        pieces_jointes = request.files.getlist('pieces_jointes')
+        pieces_jointes_filenames = []
+        for piece in pieces_jointes:
+            if piece and piece.filename:
+                filename = piece.filename[:255]
+                piece.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                pieces_jointes_filenames.append(filename)
+        pieces_jointes_str = ','.join(pieces_jointes_filenames)
+
         cursor.execute('''UPDATE procedures 
-                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, application_id=%s, reference_ticket=%s, utilisateur=%s
+                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, application_id=%s, reference_ticket=%s, piece_jointe=%s, utilisateur=%s
                           WHERE id=%s''',
-                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, utilisateur, id))
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, pieces_jointes_str, utilisateur, id))
         conn.commit()
         cursor.close()
         conn.close()
