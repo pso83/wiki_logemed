@@ -1,11 +1,13 @@
 # Utilisation de l'image officielle Python
 FROM python:3.11-slim
 
-# Installer les dépendances système pour mysqlclient
+# Installer les dépendances système nécessaires
 RUN apt-get update && apt-get install -y \
     python3-dev \
     default-libmysqlclient-dev \
     build-essential \
+    pkg-config \
+    libmariadb-dev \
     && apt-get clean
 
 # Définir le répertoire de travail dans le conteneur
