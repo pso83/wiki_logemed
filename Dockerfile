@@ -1,17 +1,24 @@
 # Utilisation de l'image officielle Python
 FROM python:3.11-slim
 
+# Installer les dépendances système pour mysqlclient
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    && apt-get clean
+
 # Définir le répertoire de travail dans le conteneur
 WORKDIR /app
 
 # Copier les fichiers du projet dans le conteneur
 COPY . .
 
-# Installer les dépendances nécessaires
+# Installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Exposer le port 8080 (Render utilise ce port par défaut)
+# Exposer le port utilisé par Flask
 EXPOSE 8080
 
-# Définir la commande pour exécuter l'application Flask
+# Démarrer l'application
 CMD ["python", "Wiki.py"]
