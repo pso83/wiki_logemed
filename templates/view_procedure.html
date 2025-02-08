@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ procedure[2] }}</title>
+
+    <!-- Inclusion de Highlight.js pour la coloration syntaxique -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -12,11 +18,13 @@
 
         <div class="card">
             <div class="card-body">
+                <!-- Description avec détection du code -->
                 <h5 class="card-title">Description</h5>
-                <p>{{ procedure[3] }}</p>
+                <pre><code class="sql">{{ procedure[3] }}</code></pre>
 
+                <!-- Protocole de Résolution avec mise en forme du code -->
                 <h5 class="card-title mt-4">Protocole de Résolution</h5>
-                <p>{{ procedure[4] }}</p>
+                <pre><code class="sql">{{ procedure[4] }}</code></pre>
 
                 <h5 class="card-title mt-4">Protocole de Vérification</h5>
                 <p>{{ procedure[5] }}</p>
@@ -33,11 +41,13 @@
                 <h5 class="card-title mt-4">Utilisateur</h5>
                 <p>{{ procedure[11] }}</p>
 
+                <!-- Affichage de l'application avec couleur -->
                 <h5 class="card-title mt-4">Application</h5>
                 <p style="background-color: {{ procedure[-1] }}; color: #fff; padding: 5px 10px; border-radius: 5px;">
                     {{ procedure[-2] or 'Non spécifiée' }}
                 </p>
 
+                <!-- Affichage des pièces jointes -->
                 {% if pieces_jointes %}
                     <h5 class="card-title mt-4">Pièces Jointes</h5>
                     <ul>
