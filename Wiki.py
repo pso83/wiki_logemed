@@ -169,9 +169,11 @@ def view_procedure(id):
     # Application de la mise en forme aux champs contenant du code
     formatted_description = format_code_blocks(procedure[3])
     formatted_resolution = format_code_blocks(procedure[4])
+    formatted_verification = format_code_blocks(procedure[5])
 
     return render_template('view_procedure.html', procedure=procedure, pieces_jointes=pieces_jointes,
-                           formatted_description=formatted_description, formatted_resolution=formatted_resolution)
+                           formatted_description=formatted_description, formatted_resolution=formatted_resolution,
+                           formatted_verification=formatted_verification)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
