@@ -3,50 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détails de la Procédure</title>
+    <title>{{ procedure[1] }}</title>
+
+    <!-- Intégration de Highlight.js pour la coloration syntaxique -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h1 class="text-center mb-4">{{ procedure[2] }}</h1> <!-- Titre de la procédure -->
+        <h1 class="text-center mb-4">{{ procedure[1] }}</h1>
 
-        <div class="card mb-4">
+        <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Description</h5>
-                <p class="card-text">{{ procedure[3] }}</p>
+                <h5>Description</h5>
+                <pre><code class="sql">{{ procedure[3] }}</code></pre>
 
-                <h5 class="card-title mt-4">Protocole de Résolution</h5>
-                <p class="card-text">{{ procedure[4] }}</p>
+                <h5>Protocole de Résolution</h5>
+                <pre><code class="sql">{{ procedure[4] }}</code></pre>
 
                 <h5 class="card-title mt-4">Protocole de Vérification</h5>
-                <p class="card-text">{{ procedure[5] }}</p>
-
-                <h5 class="card-title mt-4">Référence Ticket</h5>
-                <p class="card-text">{{ procedure[9] }}</p>
-
-                <h5 class="card-title mt-4">Mots-clés</h5>
-                <p class="card-text">{{ procedure[1] }}</p>
+                <p>{{ procedure[4] }}</p>
 
                 <h5 class="card-title mt-4">Acteur</h5>
-                <p class="card-text">{{ procedure[6] }}</p>
+                <p>{{ procedure[5] }}</p>
 
                 <h5 class="card-title mt-4">Vérificateur</h5>
-                <p class="card-text">{{ procedure[7] }}</p>
+                <p>{{ procedure[6] }}</p>
+
+                <h5 class="card-title mt-4">Référence Ticket</h5>
+                <p>{{ procedure[7] }}</p>
+
+                <h5 class="card-title mt-4">Utilisateur</h5>
+                <p>{{ procedure[9] }}</p>
+
+                <h5 class="card-title mt-4">Application</h5>
+                <p>{{ procedure[10] or 'Non spécifiée' }}</p>
+
+                <!-- Affichage des pièces jointes -->
+                {% if pieces_jointes %}
+                    <h5 class="card-title mt-4">Pièces Jointes</h5>
+                    <ul>
+                        {% for fichier in pieces_jointes %}
+                            <li><a href="{{ url_for('uploaded_file', filename=fichier) }}" target="_blank">{{ fichier }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             </div>
         </div>
 
-        <div class="text-center">
+        <div class="text-center mt-4">
             <a href="/" class="btn btn-primary">Retour à la liste</a>
         </div>
-
-        {% if procedure[10] %}  <!-- Assure-toi que l'index correspond à la colonne 'piece_jointe' -->
-            <h5 class="card-title mt-4">Pièces Jointes</h5>
-            <ul>
-                {% for fichier in procedure[10].split(',') %}
-                    <li><a href="{{ url_for('uploaded_file', filename=fichier) }}" target="_blank">{{ fichier }}</a></li>
-                {% endfor %}
-            </ul>
-        {% endif %}
     </div>
 </body>
 </html>

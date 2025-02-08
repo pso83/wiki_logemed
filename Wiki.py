@@ -28,28 +28,42 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 @app.route('/')
 def home():
     query = request.args.get('query')
+    app_filter = request.args.get('application_id')
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    base_query = """
+        SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, a.nom, a.couleur
+        FROM procedures p
+        LEFT JOIN applications a ON p.application_id = a.id
+    """
+
+    filters = []
+    params = []
+
     if query:
         keywords = query.split('#')
         keywords = [kw.strip() for kw in keywords if kw.strip()]
         search_query = " OR ".join(["p.mots_cles LIKE %s" for _ in keywords])
-        cursor.execute(f"""
-            SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, a.nom 
-            FROM procedures p
-            LEFT JOIN applications a ON p.application_id = a.id
-            WHERE {search_query}
-        """, tuple(f'%#{kw}%' for kw in keywords))
-    else:
-        cursor.execute("""
-            SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, a.nom 
-            FROM procedures p
-            LEFT JOIN applications a ON p.application_id = a.id
-        """)
+        filters.append(f"({search_query})")
+        params.extend([f'%#{kw}%' for kw in keywords])
+
+    if app_filter and app_filter.isdigit():
+        filters.append("p.application_id = %s")
+        params.append(int(app_filter))
+
+    if filters:
+        base_query += " WHERE " + " AND ".join(filters)
+
+    cursor.execute(base_query, tuple(params))
     procedures = cursor.fetchall()
+
+    cursor.execute("SELECT id, nom FROM applications")
+    applications = cursor.fetchall()
+
     cursor.close()
     conn.close()
-    return render_template('home.html', procedures=procedures)
+    return render_template('home.html', procedures=procedures, applications=applications)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_procedure():
@@ -114,20 +128,10 @@ def edit_procedure(id):
         application_id_str = request.form.get('application_id', '').strip()
         application_id = int(application_id_str) if application_id_str.isdigit() else None
 
-        # Gestion des nouvelles pièces jointes
-        pieces_jointes = request.files.getlist('pieces_jointes')
-        pieces_jointes_filenames = []
-        for piece in pieces_jointes:
-            if piece and piece.filename:
-                filename = piece.filename[:255]
-                piece.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                pieces_jointes_filenames.append(filename)
-        pieces_jointes_str = ','.join(pieces_jointes_filenames)
-
         cursor.execute('''UPDATE procedures 
-                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, application_id=%s, reference_ticket=%s, piece_jointe=%s, utilisateur=%s
+                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, application_id=%s, reference_ticket=%s, utilisateur=%s
                           WHERE id=%s''',
-                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, pieces_jointes_str, utilisateur, id))
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, utilisateur, id))
         conn.commit()
         cursor.close()
         conn.close()
@@ -140,16 +144,6 @@ def edit_procedure(id):
     cursor.close()
     conn.close()
     return render_template('edit_procedure.html', procedure=procedure, applications=applications)
-
-@app.route('/delete/<int:id>', methods=['POST'])
-def delete_procedure(id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM procedures WHERE id = %s", (id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return redirect(url_for('home'))
 
 @app.route('/view/<int:id>')
 def view_procedure(id):
