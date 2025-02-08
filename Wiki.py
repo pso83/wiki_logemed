@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 import MySQLdb
 import os
+import re
 
 app = Flask(__name__)
 
@@ -24,6 +25,10 @@ def get_db_connection():
 app.config['UPLOAD_FOLDER'] = 'uploads'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
+
+def format_code_blocks(text):
+    # Remplace les blocs entre crochets par des balises de code avec coloration syntaxique
+    return re.sub(r'\[(.*?)\]', r'<pre><code class="sql">\1</code></pre>', text, flags=re.DOTALL)
 
 @app.route('/')
 def home():
@@ -161,7 +166,12 @@ def view_procedure(id):
 
     pieces_jointes = procedure[10].split(',') if procedure[10] else []
 
-    return render_template('view_procedure.html', procedure=procedure, pieces_jointes=pieces_jointes)
+    # Application de la mise en forme aux champs contenant du code
+    formatted_description = format_code_blocks(procedure[3])
+    formatted_resolution = format_code_blocks(procedure[4])
+
+    return render_template('view_procedure.html', procedure=procedure, pieces_jointes=pieces_jointes,
+                           formatted_description=formatted_description, formatted_resolution=formatted_resolution)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):

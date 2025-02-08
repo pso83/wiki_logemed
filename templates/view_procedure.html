@@ -20,11 +20,11 @@
             <div class="card-body">
                 <!-- Description avec détection du code -->
                 <h5 class="card-title">Description</h5>
-                <pre><code class="sql">{{ procedure[3] }}</code></pre>
+                <div>{{ formatted_description | safe }}</div>
 
                 <!-- Protocole de Résolution avec mise en forme du code -->
                 <h5 class="card-title mt-4">Protocole de Résolution</h5>
-                <pre><code class="sql">{{ procedure[4] }}</code></pre>
+                <div>{{ formatted_resolution | safe }}</div>
 
                 <h5 class="card-title mt-4">Protocole de Vérification</h5>
                 <p>{{ procedure[5] }}</p>
