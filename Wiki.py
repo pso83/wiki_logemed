@@ -149,11 +149,19 @@ def edit_procedure(id):
 def view_procedure(id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM procedures WHERE id = %s", (id,))
+    cursor.execute('''
+        SELECT p.*, a.nom, a.couleur 
+        FROM procedures p
+        LEFT JOIN applications a ON p.application_id = a.id
+        WHERE p.id = %s
+    ''', (id,))
     procedure = cursor.fetchone()
     cursor.close()
     conn.close()
-    return render_template('view_procedure.html', procedure=procedure)
+
+    pieces_jointes = procedure[10].split(',') if procedure[10] else []
+
+    return render_template('view_procedure.html', procedure=procedure, pieces_jointes=pieces_jointes)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
