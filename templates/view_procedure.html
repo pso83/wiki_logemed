@@ -3,75 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ procedure[2] }}</title>
+    <title>{{ title }}</title>
 
-    <!-- Inclusion de Highlight.js pour la coloration syntaxique -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
-    <script>hljs.highlightAll();</script>
-
+    <!-- Styles pour Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .page-container {
-            border: 5px solid {{ procedure[-1] }};
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #f9f9f9;
-        }
-    </style>
+
+    <!-- Styles et scripts pour Highlight.js (coloration syntaxique) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
 </head>
+
 <body class="bg-light">
-    <div class="container mt-5 page-container">
-        <h1 class="text-center mb-4">{{ procedure[2] }}</h1>
+    <div class="container mt-5" style="border: 4px solid {{ procedure[13] }}; border-radius: 10px; padding: 20px;">
+    <h1 class="text-center mb-4">{{ title }}</h1>
 
-        <div class="card">
-            <div class="card-body">
-                <!-- Description avec détection du code -->
-                <h5 class="card-title">Description</h5>
-                <div>{{ formatted_description | safe }}</div>
+    <div class="card p-4">
+        <h5>Description :</h5>
+        <p>{{ formatted_description | safe }}</p>
 
-                <!-- Protocole de Résolution avec mise en forme du code -->
-                <h5 class="card-title mt-4">Protocole de Résolution</h5>
-                <div>{{ formatted_resolution | safe }}</div>
+        <h5>Protocole de Résolution :</h5>
+        <p>{{ formatted_resolution | safe }}</p>
 
-                <!-- Protocole de Vérification avec mise en forme du code -->
-                <h5 class="card-title mt-4">Protocole de Vérification</h5>
-                <div>{{ formatted_verification | safe }}</div>
+        <h5>Protocole de Vérification :</h5>
+        <p>{{ formatted_verification | safe }}</p>
 
-                <h5 class="card-title mt-4">Acteur</h5>
-                <p>{{ procedure[6] }}</p>
+        <h5>Application :</h5>
+        <p style="background-color: {{ procedure[13] }}; color: #FFFFFF; padding: 5px; border-radius: 5px; display: inline-block;">
+            {{ procedure[12] }}
+        </p>
 
-                <h5 class="card-title mt-4">Vérificateur</h5>
-                <p>{{ procedure[7] }}</p>
 
-                <h5 class="card-title mt-4">Référence Ticket</h5>
-                <p>{{ procedure[9] }}</p>
+        <h5>Pièces Jointes :</h5>
+            <ul>
+                {% for lien in pieces_jointes %}
+                    <li><a href="{{ lien }}" target="_blank">{{ lien.split('/')[-1] }}</a></li>
+                {% endfor %}
+            </ul>
 
-                <h5 class="card-title mt-4">Utilisateur</h5>
-                <p>{{ procedure[11] }}</p>
-
-                <!-- Affichage de l'application avec couleur -->
-                <h5 class="card-title mt-4">Application</h5>
-                <p style="background-color: {{ procedure[-1] }}; color: #fff; padding: 5px 10px; border-radius: 5px;">
-                    {{ procedure[-2] or 'Non spécifiée' }}
-                </p>
-
-                <!-- Affichage des pièces jointes -->
-                {% if pieces_jointes %}
-                    <h5 class="card-title mt-4">Pièces Jointes</h5>
-                    <ul>
-                        {% for lien in pieces_jointes %}
-                            <li><a href="{{ lien }}" target="_blank">{{ lien }}</a></li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-
-            </div>
-        </div>
-
-        <div class="text-center mt-4">
-            <a href="/" class="btn btn-primary">Retour à la liste</a>
-        </div>
     </div>
+
+    <div class="text-center mt-4">
+        <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
+    </div>
+</div>
 </body>
 </html>

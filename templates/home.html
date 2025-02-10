@@ -58,8 +58,8 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="/view/{{ procedure[0] }}" class="btn btn-info btn-sm">Afficher</a>
-                                <a href="/edit/{{ procedure[0] }}" class="btn btn-warning btn-sm">Modifier</a>
+                                <a href="{{ url_for('view_procedure', id=procedure[0]) }}" class="btn btn-info btn-sm">Afficher</a>
+                                <a href="{{ url_for('edit_procedure', id=procedure[0]) }}" class="btn btn-warning btn-sm">Modifier</a>
                                 <form method="POST" action="/delete/{{ procedure[0] }}" style="display:inline;">
                                     <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
                                 </form>

@@ -93,16 +93,22 @@
 
 
             <div class="mb-3">
-                <label for="pieces_jointes" class="form-label">Pièces Jointes</label>
-                <input type="file" class="form-control" name="pieces_jointes" id="pieces_jointes" multiple>
-                {% if procedure[11] %}
-                    <ul class="mt-2">
-                        {% for fichier in procedure[11].split(',') %}
-                            <li><a href="/uploads/{{ fichier }}" target="_blank">{{ fichier }}</a></li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+                <label for="pieces_jointes" class="form-label">Liens des Pièces Jointes</label>
+                <input type="text" class="form-control mb-2" name="pieces_jointes" placeholder="Collez le lien ici">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="ajouterChamp()">Ajouter un autre lien</button>
             </div>
+
+            <script>
+                function ajouterChamp() {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = 'pieces_jointes';
+                    input.className = 'form-control mb-2';
+                    input.placeholder = 'Collez le lien ici';
+                    document.querySelector('.mb-3').appendChild(input);
+                }
+            </script>
+
 
             <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
             <a href="/" class="btn btn-secondary">Annuler</a>
