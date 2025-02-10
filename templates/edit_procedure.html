@@ -72,23 +72,25 @@
 
             <div class="mb-3">
                 <label for="reference_ticket" class="form-label">Référence Ticket</label>
-                <input type="text" class="form-control" name="reference_ticket" id="reference_ticket" value="{{ procedure[8] }}">
+                <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure[9] }}">
             </div>
+
 
             <div class="mb-3">
                 <label for="utilisateur" class="form-label">Utilisateur</label>
-                <input type="text" class="form-control" name="utilisateur" id="utilisateur" value="{{ procedure[9] }}">
+                <input type="text" class="form-control" name="utilisateur" id="utilisateur" value="{{ procedure[11] }}">
             </div>
 
             <div class="mb-3">
                 <label for="application_id" class="form-label">Application</label>
-                <select class="form-select" name="application_id" id="application_id">
-                    <option value="">-- Sélectionner une application --</option>
+                <select name="application_id" id="application_id" class="form-select">
+                    <option value="">Sélectionner une application</option>
                     {% for app in applications %}
-                        <option value="{{ app[0] }}" {% if app[0] == procedure[10] %}selected{% endif %}>{{ app[1] }}</option>
+                        <option value="{{ app[0] }}" {% if app[0] == procedure[8] %}selected{% endif %}>{{ app[1] }}</option>
                     {% endfor %}
                 </select>
             </div>
+
 
             <div class="mb-3">
                 <label for="pieces_jointes" class="form-label">Pièces Jointes</label>

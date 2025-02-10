@@ -134,9 +134,9 @@ def edit_procedure(id):
         application_id = int(application_id_str) if application_id_str.isdigit() else None
 
         cursor.execute('''UPDATE procedures 
-                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, application_id=%s, reference_ticket=%s, utilisateur=%s
+                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, reference_ticket=%s, application_id=%s, utilisateur=%s
                           WHERE id=%s''',
-                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, utilisateur, id))
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, reference_ticket, application_id, utilisateur, id))
         conn.commit()
         cursor.close()
         conn.close()
@@ -149,6 +149,16 @@ def edit_procedure(id):
     cursor.close()
     conn.close()
     return render_template('edit_procedure.html', procedure=procedure, applications=applications)
+
+@app.route('/delete/<int:id>', methods=['POST'])
+def delete_procedure(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM procedures WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('home'))
 
 @app.route('/view/<int:id>')
 def view_procedure(id):
