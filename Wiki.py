@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for
 import MySQLdb
 import os
 import re
@@ -20,11 +20,6 @@ def get_db_connection():
         db=DB_NAME,
         charset='utf8mb4'
     )
-
-# Configuration pour les pièces jointes
-app.config['UPLOAD_FOLDER'] = 'uploads'
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 def format_code_blocks(text):
     # Remplace les blocs entre crochets par des balises de code avec coloration syntaxique
@@ -87,15 +82,9 @@ def add_procedure():
         application_id_str = request.form.get('application_id', '').strip()
         application_id = int(application_id_str) if application_id_str.isdigit() else None
 
-        # Gestion des pièces jointes
-        pieces_jointes = request.files.getlist('pieces_jointes')
-        pieces_jointes_filenames = []
-        for piece in pieces_jointes:
-            if piece and piece.filename:
-                filename = piece.filename[:255]
-                piece.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                pieces_jointes_filenames.append(filename)
-        pieces_jointes_str = ','.join(pieces_jointes_filenames)
+        # Gestion des liens des pièces jointes
+        pieces_jointes_links = request.form.getlist('pieces_jointes')
+        pieces_jointes_str = ','.join(pieces_jointes_links)
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -133,10 +122,14 @@ def edit_procedure(id):
         application_id_str = request.form.get('application_id', '').strip()
         application_id = int(application_id_str) if application_id_str.isdigit() else None
 
+        # Gestion des liens des pièces jointes
+        pieces_jointes_links = request.form.getlist('pieces_jointes')
+        pieces_jointes_str = ','.join(pieces_jointes_links)
+
         cursor.execute('''UPDATE procedures 
-                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, reference_ticket=%s, application_id=%s, utilisateur=%s
+                          SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, reference_ticket=%s, application_id=%s, piece_jointe=%s, utilisateur=%s
                           WHERE id=%s''',
-                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, reference_ticket, application_id, utilisateur, id))
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, reference_ticket, application_id, pieces_jointes_str, utilisateur, id))
         conn.commit()
         cursor.close()
         conn.close()
@@ -184,10 +177,6 @@ def view_procedure(id):
     return render_template('view_procedure.html', procedure=procedure, pieces_jointes=pieces_jointes,
                            formatted_description=formatted_description, formatted_resolution=formatted_resolution,
                            formatted_verification=formatted_verification)
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

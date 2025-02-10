@@ -60,11 +60,12 @@
                 {% if pieces_jointes %}
                     <h5 class="card-title mt-4">Pièces Jointes</h5>
                     <ul>
-                        {% for fichier in pieces_jointes %}
-                            <li><a href="{{ url_for('uploaded_file', filename=fichier) }}" target="_blank">{{ fichier }}</a></li>
+                        {% for lien in pieces_jointes %}
+                            <li><a href="{{ lien }}" target="_blank">{{ lien }}</a></li>
                         {% endfor %}
                     </ul>
                 {% endif %}
+
             </div>
         </div>
 
