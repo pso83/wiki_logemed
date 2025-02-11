@@ -79,27 +79,26 @@
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label for="pieces_jointes" class="form-label">Ajouter des Pièces Jointes</label>
-                <input type="file" id="pieces_jointes" class="form-control" multiple onchange="saveFilePaths()">
-            </div>
-            <div id="file_paths_container"></div>
+            <h5>Pièces Jointes :</h5>
+                <ul id="existing_files_list">
+                    {% for file in pieces_jointes_links %}
+                        <li><a href="{{ url_for('open_file', file_path=file) }}" target="_blank">{{ file.split('/')[-1] }}</a></li>
+                    {% endfor %}
+                </ul>
 
-            <script>
-                function saveFilePaths() {
-                    const files = document.getElementById('pieces_jointes').files;
-                    const container = document.getElementById('file_paths_container');
-                    container.innerHTML = '';
+                <button type="button" class="btn btn-secondary" onclick="addFileInput()">Ajouter une pièce jointe</button>
+                <div id="file_inputs_container"></div>
 
-                    for (let file of files) {
+                <script>
+                    function addFileInput() {
+                        const container = document.getElementById('file_inputs_container');
                         const input = document.createElement('input');
-                        input.type = 'hidden';
+                        input.type = 'file';
                         input.name = 'pieces_jointes[]';
-                        input.value = file.path || file.name; // Utilise file.path pour obtenir le chemin complet si disponible
+                        input.className = 'form-control mb-2';
                         container.appendChild(input);
                     }
-                }
-            </script>
+                </script>
 
             <button type="submit" class="btn btn-primary">Sauvegarder</button>
         </form>
