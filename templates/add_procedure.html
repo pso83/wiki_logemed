@@ -60,6 +60,16 @@
             </div>
 
             <div class="mb-3">
+                <label for="utilisateur" class="form-label">Utilisateur</label>
+                <input type="text" class="form-control" id="utilisateur" name="utilisateur" value="{{ procedure[11] if procedure else '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="reference_ticket" class="form-label">Référence Ticket</label>
+                <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure[9] if procedure else '' }}">
+            </div>
+
+            <div class="mb-3">
                 <label for="application_id" class="form-label">Application</label>
                 <select class="form-select" id="application_id" name="application_id">
                     <option value="">Sélectionner une application</option>
@@ -71,10 +81,25 @@
 
             <div class="mb-3">
                 <label for="pieces_jointes" class="form-label">Ajouter des Pièces Jointes</label>
-                <input type="file" name="pieces_jointes" class="form-control" multiple>
+                <input type="file" id="pieces_jointes" class="form-control" multiple onchange="saveFilePaths()">
             </div>
+            <div id="file_paths_container"></div>
 
+            <script>
+                function saveFilePaths() {
+                    const files = document.getElementById('pieces_jointes').files;
+                    const container = document.getElementById('file_paths_container');
+                    container.innerHTML = '';
 
+                    for (let file of files) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'pieces_jointes[]';
+                        input.value = file.path || file.name; // Utilise file.path pour obtenir le chemin complet si disponible
+                        container.appendChild(input);
+                    }
+                }
+            </script>
 
             <button type="submit" class="btn btn-primary">Sauvegarder</button>
         </form>

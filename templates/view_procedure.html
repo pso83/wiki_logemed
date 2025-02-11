@@ -28,16 +28,35 @@
         <h5>Protocole de Vérification :</h5>
         <p>{{ formatted_verification | safe }}</p>
 
+        <h5 class="card-title mt-4">Acteur</h5>
+        <p>{{ procedure[6] }}</p>
+
+        <h5 class="card-title mt-4">Vérificateur</h5>
+        <p>{{ procedure[7] }}</p>
+
+        <h5 class="card-title mt-4">Utilisateur</h5>
+        <p>{{ procedure[11] }}</p>
+
+        <h5 class="card-title mt-4">Référence Ticket</h5>
+        <p>{{ procedure[9] }}</p>
+
         <h5>Application :</h5>
         <p style="background-color: {{ procedure[13] }}; color: #FFFFFF; padding: 5px; border-radius: 5px; display: inline-block;">
             {{ procedure[12] }}
         </p>
 
-
         <h5>Pièces Jointes :</h5>
             <ul>
-                {% for lien in pieces_jointes %}
-                    <li><a href="{{ lien }}" target="_blank">{{ lien.split('/')[-1] }}</a></li>
+                {% for lien in pieces_jointes_links %}
+                    {% if lien %}
+                        <li>
+                            <a href="{{ url_for('open_file', file_path=lien) }}" target="_blank">
+                                {{ lien.split('/')[-1] }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li>Aucune pièce jointe disponible.</li>
+                    {% endif %}
                 {% endfor %}
             </ul>
 

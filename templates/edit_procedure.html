@@ -92,23 +92,26 @@
             </div>
 
 
-            <div class="mb-3">
-                <label for="pieces_jointes" class="form-label">Liens des Pièces Jointes</label>
-                <input type="text" class="form-control mb-2" name="pieces_jointes" placeholder="Collez le lien ici">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="ajouterChamp()">Ajouter un autre lien</button>
-            </div>
+            <h5>Pièces Jointes :</h5>
+                <ul id="existing_files_list">
+                    {% for file in pieces_jointes_links %}
+                        <li><a href="{{ url_for('open_file', file_path=file) }}" target="_blank">{{ file.split('/')[-1] }}</a></li>
+                    {% endfor %}
+                </ul>
 
-            <script>
-                function ajouterChamp() {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.name = 'pieces_jointes';
-                    input.className = 'form-control mb-2';
-                    input.placeholder = 'Collez le lien ici';
-                    document.querySelector('.mb-3').appendChild(input);
-                }
-            </script>
+                <button type="button" class="btn btn-secondary" onclick="addFileInput()">Ajouter une pièce jointe</button>
+                <div id="file_inputs_container"></div>
 
+                <script>
+                    function addFileInput() {
+                        const container = document.getElementById('file_inputs_container');
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.name = 'pieces_jointes[]';
+                        input.className = 'form-control mb-2';
+                        container.appendChild(input);
+                    }
+                </script>
 
             <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
             <a href="/" class="btn btn-secondary">Annuler</a>
