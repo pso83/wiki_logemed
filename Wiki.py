@@ -90,6 +90,7 @@ def view_procedure(id):
                            application_color=procedure[-1],  # Couleur de l'application
                            title=procedure[2])
 
+
 @app.route('/')
 def home():
     if 'user_id' not in session:
@@ -97,16 +98,38 @@ def home():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("""
+
+    # Récupérer toutes les applications pour le filtre
+    cursor.execute("SELECT id, nom FROM applications")
+    applications = cursor.fetchall()
+
+    # Récupérer les filtres
+    search_keywords = request.args.get('search_keywords', '').strip()
+    search_application = request.args.get('search_application', '')
+
+    query = """
         SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, COALESCE(a.nom, 'Non spécifiée') AS application_name, COALESCE(a.couleur, '#5D5D5D') AS application_color
         FROM procedures p
         LEFT JOIN applications a ON p.application_id = a.id
-    """)
+        WHERE 1=1
+    """
+    params = []
+
+    if search_keywords:
+        query += " AND (p.titre LIKE %s OR p.description LIKE %s OR p.mots_cles LIKE %s)"
+        params.extend([f"%{search_keywords}%", f"%{search_keywords}%", f"%{search_keywords}%"])
+
+    if search_application:
+        query += " AND p.application_id = %s"
+        params.append(search_application)
+
+    cursor.execute(query, params)
     procedures = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
-    return render_template('home.html', procedures=procedures)
+    return render_template('home.html', procedures=procedures, applications=applications)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

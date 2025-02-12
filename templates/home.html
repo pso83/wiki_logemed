@@ -17,9 +17,34 @@
 <body>
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Wiki des Procédures</h1>
+            <h1>WIKI - AIDE A LA GESTION DES TICKETS</h1>
             <a href="{{ url_for('add_procedure') }}" class="btn btn-success">Ajouter une Procédure</a>
         </div>
+
+        <!-- Formulaire de recherche et filtre par application -->
+        <form method="GET" action="/">
+            <div class="row g-3 align-items-center mb-4">
+                <div class="col-md-8">
+                    <input type="text" name="search_keywords" class="form-control"
+                           placeholder="Recherche par mots-clés (#mot1 #mot2)"
+                           value="{{ request.args.get('search_keywords', '') }}">
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <select name="search_application" class="form-select" onchange="this.form.submit()">
+                            <option value="">Toutes les applications</option>
+                            {% for app in applications %}
+                            <option value="{{ app[0] }}"
+                                {% if request.args.get('search_application') == app[0]|string %}selected{% endif %}>
+                                {{ app[1] }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <a href="{{ url_for('add_procedure') }}" class="btn btn-success">Ajouter</a>
+                    </div>
+                </div>
+            </div>
+        </form>
 
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
