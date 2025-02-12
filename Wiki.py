@@ -235,7 +235,7 @@ def add_procedure():
     conn.close()
     return render_template('add_procedure.html', applications=applications, title="Nouvelle Procédure")
 
-@app.route('/download/<path:filename>')
+@app.route('/home/devlog/FichiersWiki/<path:filename>')
 def download_file(filename):
     try:
         local_filepath = download_file_from_ftp(filename)
