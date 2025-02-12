@@ -40,6 +40,26 @@ def upload_file_to_ftp(file, filename):
         ftp.cwd(FTP_UPLOAD_DIR)
         ftp.storbinary(f'STOR {filename}', file)
 
+# Fonction pour télécharger un fichier depuis le serveur FTP
+def download_file_from_ftp(filename):
+    with FTP(FTP_HOST) as ftp:
+        ftp.login(FTP_USER, FTP_PASSWORD)
+        ftp.cwd(FTP_UPLOAD_DIR)
+        with open(filename, 'wb') as f:
+            ftp.retrbinary(f'RETR {filename}', f.write)
+    return filename
+
+@app.route('/preview/<path:filename>')
+def preview_file(filename):
+    try:
+        local_filepath = download_file_from_ftp(filename)
+        with open(local_filepath, 'rb') as f:
+            file_content = f.read()
+        return Response(file_content, mimetype='application/vnd.oasis.opendocument.text')
+    except Exception as e:
+        print(f"Erreur lors de l'affichage du fichier : {e}")
+        abort(404)
+
 @app.route('/view/<int:id>')
 def view_procedure(id):
     if 'user_id' not in session:
