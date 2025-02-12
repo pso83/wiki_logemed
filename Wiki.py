@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file, abort
 import MySQLdb
 import os
 import re
@@ -234,6 +234,15 @@ def add_procedure():
     cursor.close()
     conn.close()
     return render_template('add_procedure.html', applications=applications, title="Nouvelle Procédure")
+
+@app.route('/download/<path:filename>')
+def download_file(filename):
+    try:
+        local_filepath = download_file_from_ftp(filename)
+        return send_file(local_filepath, as_attachment=True)
+    except Exception as e:
+        print(f"Erreur lors du téléchargement du fichier : {e}")
+        abort(404)
 
 @app.route('/open_file/<path:file_path>')
 def open_file(file_path):

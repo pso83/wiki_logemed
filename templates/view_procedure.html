@@ -1,5 +1,3 @@
-// view_procedure
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -49,16 +47,8 @@
 
         <h5>Pièces Jointes :</h5>
             <ul>
-                {% for lien in pieces_jointes_links %}
-                    {% if lien %}
-                        <li>
-                            <a href="{{ url_for('open_file', file_path=lien) }}" target="_blank">
-                                {{ lien.split('/')[-1] }}
-                            </a>
-                        </li>
-                    {% else %}
-                        <li>Aucune pièce jointe disponible.</li>
-                    {% endif %}
+                {% for file in pieces_jointes_links %}
+                    <li><a href="{{ url_for('download_file', filename=file.split('/')[-1]) }}" class="btn btn-link">{{ file.split('/')[-1] }}</a></li>
                 {% endfor %}
             </ul>
 
