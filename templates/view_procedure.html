@@ -48,10 +48,9 @@
         <h5>Pièces Jointes :</h5>
             <ul>
                 {% for file in pieces_jointes_links %}
-                    <li><a href="{{ url_for('preview_file', filename=file.split('/')[-1]) }}" target="_blank">{{ file.split('/')[-1] }}</a></li>
+                    <li><a href="{{ url_for('download_file', filename=file.split('/')[-1]) }}" class="btn btn-link">{{ file.split('/')[-1] }}</a></li>
                 {% endfor %}
             </ul>
-
 
     </div>
 
