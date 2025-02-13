@@ -5,6 +5,7 @@ import re
 import markdown
 from ftplib import FTP
 
+# backend
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Nécessaire pour gérer les sessions
 
