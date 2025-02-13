@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 import MySQLdb
 import os
 import re
+import markdown
 from ftplib import FTP
 
 app = Flask(__name__)
@@ -78,9 +79,11 @@ def view_procedure(id):
     conn.close()
 
     pieces_jointes_links = procedure[10].split(',') if procedure[10] else []
-    formatted_description = format_code_blocks(procedure[3])
-    formatted_resolution = format_code_blocks(procedure[4])
-    formatted_verification = format_code_blocks(procedure[5])
+
+    # Convertir les champs Markdown en HTML
+    formatted_description = markdown.markdown(format_code_blocks(procedure[3]))
+    formatted_resolution = markdown.markdown(format_code_blocks(procedure[4]))
+    formatted_verification = markdown.markdown(format_code_blocks(procedure[5]))
 
     return render_template('view_procedure.html', procedure=procedure,
                            pieces_jointes_links=pieces_jointes_links,
