@@ -176,6 +176,7 @@ def delete_procedure(id):
 
     return redirect(url_for('home'))
 
+
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit_procedure(id):
     if 'user_id' not in session:
@@ -185,53 +186,27 @@ def edit_procedure(id):
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        mots_cles = request.form.get('mots_cles', '')
-        titre = request.form.get('titre', '')
-        description = request.form.get('description', '')
-        protocole_resolution = request.form.get('protocole_resolution', '')
-        protocole_verification = request.form.get('protocole_verification', '')
-        acteur = request.form.get('acteur', '')
-        verificateur = request.form.get('verificateur', '')
-        reference_ticket = request.form.get('reference_ticket', '')
-        utilisateur = session.get('username')
+        titre = request.form['titre']
+        description = request.form['description']
+        protocole_resolution = request.form['protocole_resolution']
+        protocole_verification = request.form['protocole_verification']
+        application_id = request.form.get('application_id')
 
-        application_id_str = request.form.get('application_id', '').strip()
-        application_id = int(application_id_str) if application_id_str.isdigit() else None
-
-        cursor.execute("SELECT piece_jointe FROM procedures WHERE id = %s", (id,))
-        existing_files = cursor.fetchone()[0]
-        existing_files_list = existing_files.split(',') if existing_files else []
-
-        uploaded_files = request.files.getlist('pieces_jointes[]')
-        new_files = []
-
-        for file in uploaded_files:
-            if file and file.filename:
-                safe_filename = file.filename.replace(' ', '_')
-                upload_file_to_ftp(file, safe_filename)
-                file_url = f'ftp://{FTP_HOST}{FTP_UPLOAD_DIR}/{safe_filename}'
-                new_files.append(file_url)
-
-        all_pieces_jointes = existing_files_list + new_files if new_files else existing_files_list
-        pieces_jointes_str = ','.join(all_pieces_jointes)
-
-        cursor.execute('''UPDATE procedures SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, application_id=%s, reference_ticket=%s, piece_jointe=%s, utilisateur=%s WHERE id=%s''',
-                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, pieces_jointes_str, utilisateur, id))
+        cursor.execute(
+            "UPDATE procedures SET titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, application_id=%s WHERE id=%s",
+            (titre, description, protocole_resolution, protocole_verification, application_id, id))
         conn.commit()
         cursor.close()
         conn.close()
+
         return redirect(url_for('home'))
 
     cursor.execute("SELECT * FROM procedures WHERE id = %s", (id,))
     procedure = cursor.fetchone()
-    cursor.execute("SELECT * FROM applications")
-    applications = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    pieces_jointes_links = procedure[10].split(',') if procedure[10] else []
-
-    return render_template('edit_procedure.html', procedure=procedure, applications=applications, pieces_jointes_links=pieces_jointes_links, title=procedure[2])
+    return render_template('edit_procedure.html', procedure=procedure)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_procedure():
@@ -239,48 +214,23 @@ def add_procedure():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        mots_cles = request.form.get('mots_cles', '')
-        titre = request.form.get('titre', '')
-        description = request.form.get('description', '')
-        protocole_resolution = request.form.get('protocole_resolution', '')
-        protocole_verification = request.form.get('protocole_verification', '')
-        acteur = request.form.get('acteur', '')
-        verificateur = request.form.get('verificateur', '')
-        reference_ticket = request.form.get('reference_ticket', '')
-        utilisateur = session.get('username')
-
-        application_id_str = request.form.get('application_id', '').strip()
-        application_id = int(application_id_str) if application_id_str.isdigit() else None
-
-        uploaded_files = request.files.getlist('pieces_jointes[]')
-        new_files = []
-
-        for file in uploaded_files:
-            if file and file.filename:
-                safe_filename = file.filename.replace(' ', '_')
-                upload_file_to_ftp(file, safe_filename)
-                file_url = f'ftp://{FTP_HOST}{FTP_UPLOAD_DIR}/{safe_filename}'
-                new_files.append(file_url)
-
-        pieces_jointes_str = ','.join(new_files)
+        titre = request.form['titre']
+        description = request.form['description']
+        protocole_resolution = request.form['protocole_resolution']
+        protocole_verification = request.form['protocole_verification']
+        application_id = request.form.get('application_id')
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO procedures (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe, utilisateur)
-                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, pieces_jointes_str, utilisateur))
+        cursor.execute("INSERT INTO procedures (titre, description, protocole_resolution, protocole_verification, application_id) VALUES (%s, %s, %s, %s, %s)",
+                       (titre, description, protocole_resolution, protocole_verification, application_id))
         conn.commit()
         cursor.close()
         conn.close()
+
         return redirect(url_for('home'))
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM applications")
-    applications = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return render_template('add_procedure.html', applications=applications, title="Nouvelle Procédure")
+    return render_template('add_procedure.html')
 
 @app.route('/home/devlog/FichiersWiki/<path:filename>')
 def download_file(filename):

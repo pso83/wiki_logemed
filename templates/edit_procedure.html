@@ -3,90 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modifier la Procédure</title>
+    <title>{{ title }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Style pour rendre les champs textarea dynamiques -->
-    <style>
-        textarea {
-            overflow: hidden;
-            resize: none;
-            min-height: 100px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-    </style>
-
-    <!-- Script pour ajuster automatiquement la taille des champs texte -->
+    <script src="{{ url_for('static', filename='js/ckeditor/ckeditor.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('textarea').forEach(textarea => {
-                textarea.style.height = textarea.scrollHeight + 'px';
-                textarea.addEventListener('input', function () {
-                    this.style.height = 'auto';
-                    this.style.height = this.scrollHeight + 'px';
-                });
-            });
-        });
+        CKEDITOR.replace('description');
+        CKEDITOR.replace('protocole_resolution');
+        CKEDITOR.replace('protocole_verification');
     </script>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Modifier la Procédure</h1>
+        <h1 class="text-center mb-4">{{ title }}</h1>
 
-        <form method="POST" action="/edit/{{ procedure[0] }}" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data">
             <div class="mb-3">
-                <label for="titre" class="form-label">Titre</label>
-                <input type="text" class="form-control" name="titre" id="titre" value="{{ procedure[2] }}" required>
+                <label for="mots_cles" class="form-label">Mots Clés</label>
+                <input type="text" class="form-control" id="mots_cles" name="mots_cles" value="{{ procedure[1] if procedure else '' }}">
             </div>
 
             <div class="mb-3">
-                <label for="mots_cles" class="form-label">Mots-clés (séparés par #)</label>
-                <input type="text" class="form-control" name="mots_cles" id="mots_cles" value="{{ procedure[1] }}">
+                <label for="titre" class="form-label">Titre</label>
+                <input type="text" class="form-control" id="titre" name="titre" value="{{ procedure[2] if procedure else '' }}">
             </div>
 
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" name="description" id="description">{{ procedure[3] }}</textarea>
+                <textarea class="form-control" id="description" name="description">{{ procedure[3] if procedure else '' }}</textarea>
             </div>
 
             <div class="mb-3">
                 <label for="protocole_resolution" class="form-label">Protocole de Résolution</label>
-                <textarea class="form-control" name="protocole_resolution" id="protocole_resolution">{{ procedure[4] }}</textarea>
+                <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure[4] if procedure else '' }}</textarea>
             </div>
 
             <div class="mb-3">
                 <label for="protocole_verification" class="form-label">Protocole de Vérification</label>
-                <textarea class="form-control" name="protocole_verification" id="protocole_verification">{{ procedure[5] }}</textarea>
+                <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure[5] if procedure else '' }}</textarea>
             </div>
 
             <div class="mb-3">
                 <label for="acteur" class="form-label">Acteur</label>
-                <input type="text" class="form-control" name="acteur" id="acteur" value="{{ procedure[6] }}">
+                <input type="text" class="form-control" id="acteur" name="acteur" value="{{ procedure[6] if procedure else '' }}">
             </div>
 
             <div class="mb-3">
                 <label for="verificateur" class="form-label">Vérificateur</label>
-                <input type="text" class="form-control" name="verificateur" id="verificateur" value="{{ procedure[7] }}">
+                <input type="text" class="form-control" id="verificateur" name="verificateur" value="{{ procedure[7] if procedure else '' }}">
             </div>
 
             <div class="mb-3">
                 <label for="reference_ticket" class="form-label">Référence Ticket</label>
-                <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure[9] }}">
-            </div>
-
-
-            <div class="mb-3">
-                <label for="utilisateur" class="form-label">Utilisateur</label>
-                <input type="text" class="form-control" name="utilisateur" id="utilisateur" value="{{ procedure[11] }}">
+                <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure[9] if procedure else '' }}">
             </div>
 
             <div class="mb-3">
                 <label for="application_id" class="form-label">Application</label>
-                <select name="application_id" id="application_id" class="form-select">
+                <select class="form-select" id="application_id" name="application_id">
                     <option value="">Sélectionner une application</option>
                     {% for app in applications %}
-                        <option value="{{ app[0] }}" {% if app[0] == procedure[8] %}selected{% endif %}>{{ app[1] }}</option>
+                        <option value="{{ app[0] }}" {% if procedure and procedure[8] == app[0] %}selected{% endif %}>{{ app[1] }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -112,9 +88,12 @@
                     }
                 </script>
 
-            <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
-            <a href="/" class="btn btn-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary">Sauvegarder</button>
         </form>
+
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
+        </div>
     </div>
 </body>
 </html>
