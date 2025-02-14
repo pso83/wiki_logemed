@@ -8,6 +8,12 @@ from ftplib import FTP
 
 # backend
 app = Flask(__name__)
+
+# Configuration du dossier des images
+UPLOAD_FOLDER = 'static/images'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 app.secret_key = 'your_secret_key'  # Nécessaire pour gérer les sessions
 
 # Configuration de la base de données
@@ -301,10 +307,6 @@ import uuid
 from flask import request, url_for, jsonify
 import os
 
-UPLOAD_FOLDER = 'static/images'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
@@ -327,13 +329,14 @@ def upload_image():
 
     file_url = url_for('serve_uploaded_images', filename=filename, _external=True)
 
-    print(f"✅ Image enregistrée : {file_url}")
+    print(f"✅ Image enregistrée et servie à : {file_url}")
 
     return jsonify({"success": True, "url": file_url})
 
-if __name__ == '__main__':
-    @app.route('/serve_image/<path:filename>')  # Nouveau nom pour éviter le conflit
-    def serve_uploaded_images(filename):
-        return send_from_directory(UPLOAD_FOLDER, filename)
 
+@app.route('/serve_image/<path:filename>')
+def serve_uploaded_images(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
