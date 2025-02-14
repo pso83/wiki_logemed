@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file, abort
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file, abort, send_from_directory
 import MySQLdb
+import uuid
 import os
 import re
 import markdown
@@ -295,5 +296,44 @@ def download_file(filename):
 def open_file(file_path):
     return redirect(f'ftp://{FTP_HOST}{FTP_UPLOAD_DIR}/{file_path}')
 
+
+import uuid
+from flask import request, url_for, jsonify
+import os
+
+UPLOAD_FOLDER = 'static/images'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    print("🔄 Requête reçue pour l'upload d'image...")
+
+    if 'upload' not in request.files:
+        print("❌ Aucun fichier reçu !")
+        return jsonify({'success': False, 'error': 'Aucun fichier envoyé'})
+
+    file = request.files['upload']
+
+    if file.filename == '':
+        print("❌ Nom de fichier invalide !")
+        return jsonify({'success': False, 'error': 'Nom de fichier invalide'})
+
+    filename = str(uuid.uuid4()) + "_" + file.filename
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+    file.save(file_path)
+
+    file_url = url_for('serve_uploaded_images', filename=filename, _external=True)
+
+    print(f"✅ Image enregistrée : {file_url}")
+
+    return jsonify({"success": True, "url": file_url})
+
 if __name__ == '__main__':
+    @app.route('/serve_image/<path:filename>')  # Nouveau nom pour éviter le conflit
+    def serve_uploaded_images(filename):
+        return send_from_directory(UPLOAD_FOLDER, filename)
+
     app.run(host='0.0.0.0', port=8080, debug=True)

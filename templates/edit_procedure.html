@@ -4,18 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier la Procédure</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Style pour rendre les champs textarea dynamiques -->
-    <style>
-        textarea {
-            overflow: hidden;
-            resize: none;
-            min-height: 100px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (document.getElementById('description')) {
+                CKEDITOR.replace('description');
+            }
+            if (document.getElementById('protocole_resolution')) {
+                CKEDITOR.replace('protocole_resolution');
+            }
+            if (document.getElementById('protocole_verification')) {
+                CKEDITOR.replace('protocole_verification');
+            }
+        });
+    </script>
+
+    <!-- jQuery (obligatoire pour Trumbowyg) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- CSS de Trumbowyg -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/trumbowyg@2.26.0/dist/ui/trumbowyg.min.css">
+
+    <!-- JS de Trumbowyg (chargé après jQuery) -->
+    <script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.26.0/dist/trumbowyg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.26.0/dist/plugins/upload/trumbowyg.upload.min.js"></script>
+
 
     <!-- Script pour ajuster automatiquement la taille des champs texte -->
     <script>
@@ -30,6 +45,7 @@
         });
     </script>
 </head>
+
 <body class="bg-light">
     <div class="container mt-5">
         <h1 class="text-center mb-4">Modifier la Procédure</h1>
@@ -45,19 +61,34 @@
                 <input type="text" class="form-control" name="mots_cles" id="mots_cles" value="{{ procedure[1] }}">
             </div>
 
+            <!-- Bouton pour uploader une image dans la description -->
+            <div class="mb-2">
+                <input type="file" id="uploadDescription" class="form-control d-none" accept="image/*">
+                <button type="button" class="btn btn-primary btn-sm" onclick="uploadImage('uploadDescription', 'description')">📷 Ajouter une image</button>
+            </div>
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" name="description" id="description">{{ procedure[3] }}</textarea>
+                <textarea class="form-control" id="description" name="description">{{ procedure[3] if procedure else '' }}</textarea>
             </div>
 
+            <!-- Bouton pour uploader une image dans le protocole de résolution -->
+            <div class="mb-2">
+                <input type="file" id="uploadResolution" class="form-control d-none" accept="image/*">
+                <button type="button" class="btn btn-primary btn-sm" onclick="uploadImage('uploadResolution', 'protocole_resolution')">📷 Ajouter une image</button>
+            </div>
             <div class="mb-3">
                 <label for="protocole_resolution" class="form-label">Protocole de Résolution</label>
-                <textarea class="form-control" name="protocole_resolution" id="protocole_resolution">{{ procedure[4] }}</textarea>
+                <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure[4] if procedure else '' }}</textarea>
             </div>
 
+            <!-- Bouton pour uploader une image dans le protocole de vérification -->
+            <div class="mb-2">
+                <input type="file" id="uploadVerification" class="form-control d-none" accept="image/*">
+                <button type="button" class="btn btn-primary btn-sm" onclick="uploadImage('uploadVerification', 'protocole_verification')">📷 Ajouter une image</button>
+            </div>
             <div class="mb-3">
                 <label for="protocole_verification" class="form-label">Protocole de Vérification</label>
-                <textarea class="form-control" name="protocole_verification" id="protocole_verification">{{ procedure[5] }}</textarea>
+               <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure[5] if procedure else '' }}</textarea>
             </div>
 
             <div class="mb-3">
@@ -116,5 +147,76 @@
             <a href="/" class="btn btn-secondary">Annuler</a>
         </form>
     </div>
+
+    <!-- JavaScript de Trumbowyg -->
+<script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.26.0/dist/plugins/upload/trumbowyg.upload.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#description, #protocole_resolution, #protocole_verification').trumbowyg({
+        btns: [
+            ['viewHTML'],
+            ['formatting'],
+            ['strong', 'em', 'underline'],
+            ['foreColor', 'backColor'],
+            ['link'],
+            ['upload'], // Bouton d'upload d'image depuis l'ordinateur
+            ['unorderedList', 'orderedList'],
+            ['removeformat'],
+            ['fullscreen']
+        ],
+        plugins: {
+            upload: {
+                serverPath: "{{ url_for('upload_image') }}",  // URL du serveur Flask pour l’upload
+                fileFieldName: "upload",
+                urlPropertyName: "url",
+                allowedTypes: ["image/png", "image/jpeg", "image/gif"],  // Formats d'images acceptés
+                statusPropertyName: "success",
+                success: function(data, trumbowyg, $modal, values) {
+                    console.log("✅ Upload réussi :", data.url);
+
+                    if (data.url) {
+                        console.log("🔗 URL reçue, attente avant insertion :", data.url);
+
+                        // Attendre 1 seconde avant d'insérer l'image pour laisser le serveur écrire le fichier
+                        setTimeout(function() {
+                            console.log("🕒 Insertion de l'image après temporisation :", data.url);
+                            trumbowyg.execCmd('insertImage', data.url);
+                        }, 5000); // 1000ms = 1 seconde
+                    } else {
+                        console.error("❌ Problème d'URL, image non insérée.");
+                        alert("L'upload a réussi, mais l'URL est introuvable.");
+                    }
+
+                    $modal.remove(); // Fermer la boîte de dialogue après insertion
+                },
+                error: function(error) {
+                    console.error("❌ Erreur d'upload :", error);
+                    alert("Erreur lors de l'upload de l'image !");
+                }
+            }
+        }
+    });
+
+    console.log("✅ Trumbowyg avec upload d'images est bien initialisé !");
+});
+</script>
+
+
+<script>
+$(document).ready(function() {
+    console.log("✅ jQuery est bien chargé :", typeof $ !== "undefined");
+    console.log("✅ Trumbowyg est bien chargé :", typeof $.trumbowyg !== "undefined");
+});
+</script>
+
+<script>
+$(document).ready(function() {
+    $('.trumbowyg-button-pane').on('click', '.trumbowyg-insertImage-button', function() {
+        console.log("📸 Bouton d'ajout d'image cliqué !");
+    });
+});
+</script>
+
 </body>
 </html>
