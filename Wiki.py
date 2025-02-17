@@ -1,12 +1,19 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file, abort
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file, abort, send_from_directory
 import MySQLdb
+import uuid
 import os
 import re
 import markdown
 from ftplib import FTP
 
-# Code pour le backend
+# backend
 app = Flask(__name__)
+
+# Configuration du dossier des images
+UPLOAD_FOLDER = 'static/images'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 app.secret_key = 'your_secret_key'  # Nécessaire pour gérer les sessions
 
 # Configuration de la base de données
@@ -176,7 +183,6 @@ def delete_procedure(id):
 
     return redirect(url_for('home'))
 
-
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit_procedure(id):
     if 'user_id' not in session:
@@ -186,27 +192,53 @@ def edit_procedure(id):
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        titre = request.form['titre']
-        description = request.form['description']
-        protocole_resolution = request.form['protocole_resolution']
-        protocole_verification = request.form['protocole_verification']
-        application_id = request.form.get('application_id')
+        mots_cles = request.form.get('mots_cles', '')
+        titre = request.form.get('titre', '')
+        description = request.form.get('description', '')
+        protocole_resolution = request.form.get('protocole_resolution', '')
+        protocole_verification = request.form.get('protocole_verification', '')
+        acteur = request.form.get('acteur', '')
+        verificateur = request.form.get('verificateur', '')
+        reference_ticket = request.form.get('reference_ticket', '')
+        utilisateur = session.get('username')
 
-        cursor.execute(
-            "UPDATE procedures SET titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, application_id=%s WHERE id=%s",
-            (titre, description, protocole_resolution, protocole_verification, application_id, id))
+        application_id_str = request.form.get('application_id', '').strip()
+        application_id = int(application_id_str) if application_id_str.isdigit() else None
+
+        cursor.execute("SELECT piece_jointe FROM procedures WHERE id = %s", (id,))
+        existing_files = cursor.fetchone()[0]
+        existing_files_list = existing_files.split(',') if existing_files else []
+
+        uploaded_files = request.files.getlist('pieces_jointes[]')
+        new_files = []
+
+        for file in uploaded_files:
+            if file and file.filename:
+                safe_filename = file.filename.replace(' ', '_')
+                upload_file_to_ftp(file, safe_filename)
+                file_url = f'ftp://{FTP_HOST}{FTP_UPLOAD_DIR}/{safe_filename}'
+                new_files.append(file_url)
+
+        all_pieces_jointes = existing_files_list + new_files if new_files else existing_files_list
+        pieces_jointes_str = ','.join(all_pieces_jointes)
+
+        cursor.execute('''UPDATE procedures SET mots_cles=%s, titre=%s, description=%s, protocole_resolution=%s, protocole_verification=%s, acteur=%s, verificateur=%s, application_id=%s, reference_ticket=%s, piece_jointe=%s, utilisateur=%s WHERE id=%s''',
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, pieces_jointes_str, utilisateur, id))
         conn.commit()
         cursor.close()
         conn.close()
-
         return redirect(url_for('home'))
 
     cursor.execute("SELECT * FROM procedures WHERE id = %s", (id,))
     procedure = cursor.fetchone()
+    cursor.execute("SELECT * FROM applications")
+    applications = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    return render_template('edit_procedure.html', procedure=procedure)
+    pieces_jointes_links = procedure[10].split(',') if procedure[10] else []
+
+    return render_template('edit_procedure.html', procedure=procedure, applications=applications, pieces_jointes_links=pieces_jointes_links, title=procedure[2])
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_procedure():
@@ -214,23 +246,48 @@ def add_procedure():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        titre = request.form['titre']
-        description = request.form['description']
-        protocole_resolution = request.form['protocole_resolution']
-        protocole_verification = request.form['protocole_verification']
-        application_id = request.form.get('application_id')
+        mots_cles = request.form.get('mots_cles', '')
+        titre = request.form.get('titre', '')
+        description = request.form.get('description', '')
+        protocole_resolution = request.form.get('protocole_resolution', '')
+        protocole_verification = request.form.get('protocole_verification', '')
+        acteur = request.form.get('acteur', '')
+        verificateur = request.form.get('verificateur', '')
+        reference_ticket = request.form.get('reference_ticket', '')
+        utilisateur = session.get('username')
+
+        application_id_str = request.form.get('application_id', '').strip()
+        application_id = int(application_id_str) if application_id_str.isdigit() else None
+
+        uploaded_files = request.files.getlist('pieces_jointes[]')
+        new_files = []
+
+        for file in uploaded_files:
+            if file and file.filename:
+                safe_filename = file.filename.replace(' ', '_')
+                upload_file_to_ftp(file, safe_filename)
+                file_url = f'ftp://{FTP_HOST}{FTP_UPLOAD_DIR}/{safe_filename}'
+                new_files.append(file_url)
+
+        pieces_jointes_str = ','.join(new_files)
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO procedures (titre, description, protocole_resolution, protocole_verification, application_id) VALUES (%s, %s, %s, %s, %s)",
-                       (titre, description, protocole_resolution, protocole_verification, application_id))
+        cursor.execute('''INSERT INTO procedures (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, piece_jointe, utilisateur)
+                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+                          (mots_cles, titre, description, protocole_resolution, protocole_verification, acteur, verificateur, application_id, reference_ticket, pieces_jointes_str, utilisateur))
         conn.commit()
         cursor.close()
         conn.close()
-
         return redirect(url_for('home'))
 
-    return render_template('add_procedure.html')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM applications")
+    applications = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('add_procedure.html', applications=applications, title="Nouvelle Procédure")
 
 @app.route('/home/devlog/FichiersWiki/<path:filename>')
 def download_file(filename):
@@ -244,6 +301,42 @@ def download_file(filename):
 @app.route('/open_file/<path:file_path>')
 def open_file(file_path):
     return redirect(f'ftp://{FTP_HOST}{FTP_UPLOAD_DIR}/{file_path}')
+
+
+import uuid
+from flask import request, url_for, jsonify
+import os
+
+
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    print("🔄 Requête reçue pour l'upload d'image...")
+
+    if 'upload' not in request.files:
+        print("❌ Aucun fichier reçu !")
+        return jsonify({'success': False, 'error': 'Aucun fichier envoyé'})
+
+    file = request.files['upload']
+
+    if file.filename == '':
+        print("❌ Nom de fichier invalide !")
+        return jsonify({'success': False, 'error': 'Nom de fichier invalide'})
+
+    filename = str(uuid.uuid4()) + "_" + file.filename
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+    file.save(file_path)
+
+    file_url = url_for('serve_uploaded_images', filename=filename, _external=True)
+
+    print(f"✅ Image enregistrée et servie à : {file_url}")
+
+    return jsonify({"success": True, "url": file_url})
+
+
+@app.route('/serve_image/<path:filename>')
+def serve_uploaded_images(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

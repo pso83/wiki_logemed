@@ -8,25 +8,12 @@
     <!-- Styles pour Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
     <!-- Styles et scripts pour Highlight.js (coloration syntaxique) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
-
-    <style>
-        .code-block {
-            background-color: #f8f9fa;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            max-height: 500px;
-            min-height: 100px;
-            display: block;
-        }
-    </style>
 </head>
 
 <body class="bg-light">
@@ -35,13 +22,13 @@
 
     <div class="card p-4">
         <h5>Description :</h5>
-        <div class="code-block">{{ formatted_description.replace('[', '<pre><code>').replace(']', '</code></pre>') | safe }}</div>
+        <p>{{ formatted_description | safe }}</p>
 
         <h5>Protocole de Résolution :</h5>
-        <div class="code-block">{{ formatted_resolution.replace('[', '<pre><code>').replace(']', '</code></pre>') | safe }}</div>
+        <p>{{ formatted_resolution | safe }}</p>
 
         <h5>Protocole de Vérification :</h5>
-        <div class="code-block">{{ formatted_verification.replace('[', '<pre><code>').replace(']', '</code></pre>') | safe }}</div>
+        <p>{{ formatted_verification | safe }}</p>
 
         <h5 class="card-title mt-4">Acteur</h5>
         <p>{{ procedure[6] }}</p>
@@ -49,7 +36,7 @@
         <h5 class="card-title mt-4">Vérificateur</h5>
         <p>{{ procedure[7] }}</p>
 
-        <h5 class="card-title mt-4">Créateur</h5>
+        <h5 class="card-title mt-4">Utilisateur</h5>
         <p>{{ procedure[11] }}</p>
 
         <h5 class="card-title mt-4">Référence Ticket</h5>
@@ -66,6 +53,7 @@
                     <li><a href="{{ url_for('download_file', filename=file.split('/')[-1]) }}" class="btn btn-link">{{ file.split('/')[-1] }}</a></li>
                 {% endfor %}
             </ul>
+
     </div>
 
     <div class="text-center mt-4">
