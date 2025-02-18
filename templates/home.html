@@ -5,76 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wiki des Procédures</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* ✅ Style des badges d'application */
+        .application-badge {
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        /* ✅ Style du tableau des statuts */
+        .badge {
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 5px;
+        }
+
+        /* ✅ Aligner les boutons d'action sur une seule ligne */
+        .btn-group-custom {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>WIKI - AIDE A LA GESTION DES TICKETS</h1>
-            <a href="{{ url_for('add_procedure') }}" class="btn btn-success">Ajouter une Procédure</a>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>WIKI - BASE DE CONNAISSANCE</h1>
+
+        <!-- ✅ Boutons d'action sur une seule ligne -->
+        <div class="btn-group-custom">
+            {% if session.get("est_admin") %}
+                <a href="{{ url_for('configuration') }}" class="btn btn-secondary">Configuration</a>
+            {% endif %}
+            {% if session.get("est_moderateur") %}
+                <a href="{{ url_for('gestion_procedures_a_verifier') }}" class="btn btn-warning">Procédures à vérifier</a>
+            {% endif %}
+            <a href="{{ url_for('add_procedure') }}" class="btn btn-success">Ajouter une procédure</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">Déconnexion</a>
         </div>
-
-        <!-- Formulaire de recherche et filtre par application -->
-        <form method="GET" action="/">
-            <div class="row g-3 align-items-center mb-4">
-                <div class="col-md-8">
-                    <input type="text" name="search_keywords" class="form-control"
-                           placeholder="Recherche par mots-clés (#mot1 #mot2)"
-                           value="{{ request.args.get('search_keywords', '') }}">
-                </div>
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <select name="search_application" class="form-select" onchange="this.form.submit()">
-                            <option value="">Toutes les applications</option>
-                            {% for app in applications %}
-                            <option value="{{ app[0] }}"
-                                {% if request.args.get('search_application') == app[0]|string %}selected{% endif %}>
-                                {{ app[1] }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <a href="{{ url_for('add_procedure') }}" class="btn btn-success">Ajouter</a>
-                    </div>
-                </div>
-            </div>
-        </form>
-
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Titre</th>
-                    <th>Description</th>
-                    <th>Mots-clés</th>
-                    <th>Ticket</th>
-                    <th>Application</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for procedure in procedures %}
-                <tr>
-                    <td>{{ procedure[1] }}</td>  <!-- Titre -->
-                    <td>{{ procedure[2] }}</td>  <!-- Description -->
-                    <td>{{ procedure[3] }}</td>  <!-- Mots-clés -->
-                    <td>{{ procedure[4] }}</td>  <!-- Ticket -->
-                    <td>
-                        <span class="application-badge" style="background-color: {{ procedure[6] }};">
-                            {{ procedure[5] }}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('view_procedure', id=procedure[0]) }}" class="btn btn-info btn-sm">Afficher</a>
-                        <a href="{{ url_for('edit_procedure', id=procedure[0]) }}" class="btn btn-warning btn-sm">Modifier</a>
-                        <form action="{{ url_for('delete_procedure', id=procedure[0]) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ✅ Notifications pour les procédures à valider et à corriger -->
+    {% if procedures_a_valider > 0 and session.get("est_moderateur") %}
+        <div class="alert alert-warning d-inline-block" style="max-width: 500px;" role="alert">
+            ⚠️ Il y a <strong>{{ procedures_a_valider }}</strong> procédures à valider.
+            <a href="{{ url_for('gestion_procedures_a_verifier') }}" class="btn btn-sm btn-primary">Voir</a>
+        </div>
+    {% endif %}
+
+    {% if procedures_a_corriger > 0 %}
+        <div class="alert alert-danger d-inline-block" style="max-width: 500px;" role="alert">
+            ⚠️ Vous avez <strong>{{ procedures_a_corriger }}</strong> procédures à corriger.
+            <a href="{{ url_for('home', filter='correction') }}" class="btn btn-sm btn-danger">Voir</a>
+        </div>
+    {% endif %}
+
+
+    <!-- ✅ Filtre par application -->
+    <div class="mb-3">
+        <label for="application_filter" class="form-label">Filtrer par application :</label>
+        <select name="search_application" class="form-select" onchange="this.form.submit()">
+            <option value="">Toutes les applications</option>
+            {% for app in applications %}
+                <option value="{{ app[0] }}" {% if request.args.get('search_application') == app[0]|string %}selected{% endif %}>
+                    {{ app[1] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- ✅ Tableau des procédures -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Mots-clés</th>
+                <th>Ticket</th>
+                <th>Applications Impactées</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for procedure in procedures %}
+            {% if procedure[7] == 0 or procedure[7] is none %}
+            <tr>
+                <td>{{ procedure[1] }}</td>
+                <td>{{ procedure[2] }}</td>
+                <td>{{ procedure[3] }}</td>
+                <td>{{ procedure[4] }}</td>
+                <td>
+                    <div class="application-container">
+                        {% if procedure[5] %}
+                            {% set applications = procedure[5].split(', ') %}
+                            {% set couleurs = procedure[9].split(', ') if procedure[9] else [] %}
+                            {% for app in applications %}
+                                <span class="application-badge"
+                                      style="background-color: {{ couleurs[loop.index0] if couleurs|length > loop.index0 else '#cccccc' }};">
+                                    {{ app }}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="application-badge application-badge-default">Aucune application</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <!-- ✅ Mise en forme avec badge coloré -->
+                    <span class="badge
+                        {% if procedure[6] == 'À valider' %} bg-danger
+                        {% elif procedure[6] == 'Validée' %} bg-success
+                        {% elif procedure[6] == 'À vérifier' %} bg-warning
+                        {% elif procedure[6] == 'Rejetée' %} bg-danger {% endif %}">
+                        {{ procedure[6] }}
+                        {% if procedure[6] == 'Rejetée' %} ⚠️ {% endif %}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('view_procedure', id=procedure[0]) }}" class="btn btn-info btn-sm">Afficher</a>
+
+                    {% if session.get("username") == procedure[8] %}
+                        {% if procedure[6] == 'Rejetée' %}
+                            <a href="{{ url_for('edit_procedure', id=procedure[0]) }}" class="btn btn-primary btn-sm">Corriger</a>
+                        {% else %}
+                            <a href="{{ url_for('edit_procedure', id=procedure[0]) }}" class="btn btn-warning btn-sm">Modifier</a>
+                        {% endif %}
+
+                        <form method="POST" action="{{ url_for('soft_delete', id=procedure[0]) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                        </form>
+                    {% endif %}
+                    <!-- ✅ Boutons pour les modérateurs si la procédure est "À valider" ou "À vérifier" -->
+                    {% if procedure[6] in ['À valider', 'À vérifier'] and session.get("est_moderateur") %}
+                    <form method="POST" action="{{ url_for('validate_procedure', id=procedure[0]) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-success btn-sm">Valider</button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('reject_procedure', id=procedure[0]) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Rejeter</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

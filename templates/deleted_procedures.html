@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procédures Supprimées</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Procédures Supprimées</h1>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Mots-clés</th>
+                <th>Ticket</th>
+                <th>Applications Impactées</th>
+                <th>Statut</th>
+                <th>Auteur</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for procedure in procedures %}
+            <tr>
+                <td>{{ procedure[1] }}</td>  <!-- Titre -->
+                <td>{{ procedure[2] }}</td>  <!-- Description -->
+                <td>{{ procedure[3] }}</td>  <!-- Mots-clés -->
+                <td>{{ procedure[4] }}</td>  <!-- Ticket -->
+                <td>
+                    <span class="application-badge">
+                        {{ procedure[5] if procedure[5] else 'Aucune application' }}
+                    </span>
+                </td>
+                <td>{{ procedure[6] }}</td>  <!-- Statut -->
+                <td>{{ procedure[7] }}</td>  <!-- Auteur -->
+                <td>
+                    <a href="{{ url_for('view_procedure', id=procedure[0]) }}" class="btn btn-info btn-sm">Afficher</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- ✅ Bouton Retour -->
+    <a href="{{ url_for('home') }}" class="btn btn-retour">Retour</a>
+</div>
+
+</body>
+</html>

@@ -70,13 +70,66 @@
             </div>
 
             <div class="mb-3">
-                <label for="application_id" class="form-label">Application</label>
-                <select class="form-select" id="application_id" name="application_id">
-                    <option value="">Sélectionner une application</option>
-                    {% for app in applications %}
-                        <option value="{{ app[0] }}" {% if procedure and procedure[8] == app[0] %}selected{% endif %}>{{ app[1] }}</option>
-                    {% endfor %}
-                </select>
+                <label for="application_select" class="form-label">Sélectionner une Application</label>
+                <div class="input-group">
+                    <select id="application_select" class="form-select">
+                        <option value="">-- Sélectionner --</option>
+                        {% for app in applications %}
+                            <option value="{{ app[0] }}">{{ app[1] }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-primary" onclick="addApplication()">Ajouter</button>
+                </div>
+            </div>
+
+            <!-- Champ qui affichera les applications sélectionnées -->
+            <div class="mb-3">
+                <label class="form-label">Applications Impactées</label>
+                <ul id="selected_applications_list"></ul>
+            </div>
+
+            <!-- Champ caché pour stocker les applications sélectionnées -->
+            <input type="hidden" name="application_id" id="application_id" value="">
+
+            <script>
+                function addApplication() {
+                    let select = document.getElementById("application_select");
+                    let selectedAppId = select.value;
+                    let selectedAppName = select.options[select.selectedIndex].text;
+                    let selectedList = document.getElementById("selected_applications_list");
+                    let hiddenField = document.getElementById("application_id");
+
+                    if (selectedAppId && !document.getElementById("app_" + selectedAppId)) {
+                        // Ajouter l'application sélectionnée à la liste affichée
+                        let listItem = document.createElement("li");
+                        listItem.id = "app_" + selectedAppId;
+                        listItem.innerHTML = `${selectedAppName}
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeApplication('${selectedAppId}')">❌</button>`;
+                        selectedList.appendChild(listItem);
+
+                        // Ajouter l'ID au champ caché
+                        if (hiddenField.value) {
+                            hiddenField.value += "," + selectedAppId;
+                        } else {
+                            hiddenField.value = selectedAppId;
+                        }
+                    }
+                }
+
+                function removeApplication(appId) {
+                    // Supprimer l'élément de la liste
+                    document.getElementById("app_" + appId).remove();
+
+                    // Mettre à jour le champ caché
+                    let hiddenField = document.getElementById("application_id");
+                    let apps = hiddenField.value.split(",");
+                    hiddenField.value = apps.filter(id => id !== appId).join(",");
+                }
+            </script>
+
+            <div class="mb-3">
+                <label for="base_donnees" class="form-label">Base de Données Impactée</label>
+                <input type="text" class="form-control" id="base_donnees" name="base_donnees" value="{{ procedure[10] if procedure else '' }}">
             </div>
 
             <h5>Pièces Jointes :</h5>

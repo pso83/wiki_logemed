@@ -5,219 +5,252 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier la Procédure</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- jQuery (obligatoire pour Trumbowyg) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- CSS de Trumbowyg -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/trumbowyg@2.26.0/dist/ui/trumbowyg.min.css">
-
-    <!-- JS de Trumbowyg (chargé après jQuery) -->
-    <script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.26.0/dist/trumbowyg.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.26.0/dist/plugins/upload/trumbowyg.upload.min.js"></script>
-
-
-    <!-- Script pour ajuster automatiquement la taille des champs texte -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('textarea').forEach(textarea => {
-                textarea.style.height = textarea.scrollHeight + 'px';
-                textarea.addEventListener('input', function () {
-                    this.style.height = 'auto';
-                    this.style.height = this.scrollHeight + 'px';
-                });
-            });
-        });
-    </script>
 </head>
+<body>
 
-<body class="bg-light">
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Modifier la Procédure</h1>
+<div class="container procedure-container mt-5"
+     style="border-color: {{ applications_associees[0][2] if applications_associees else '#ccc' }};">
+    <h1 class="text-center mb-4">Modifier la Procédure</h1>
+    <form method="POST" action="{{ url_for('edit_procedure', id=procedure[0]) }}">
+        <div class="mb-3">
+            <label for="titre" class="form-label">Titre</label>
+            <input type="text" class="form-control" name="titre" id="titre" value="{{ procedure[1] }}" required>
+        </div>
 
-        <form method="POST" action="/edit/{{ procedure[0] }}" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="titre" class="form-label">Titre</label>
-                <input type="text" class="form-control" name="titre" id="titre" value="{{ procedure[2] }}" required>
-            </div>
+        <div class="mb-3">
+            <label for="mots_cles" class="form-label">Mots-clés (séparés par #)</label>
+            <input type="text" class="form-control" name="mots_cles" id="mots_cles" value="{{ procedure[2] }}">
+        </div>
 
-            <div class="mb-3">
-                <label for="mots_cles" class="form-label">Mots-clés (séparés par #)</label>
-                <input type="text" class="form-control" name="mots_cles" id="mots_cles" value="{{ procedure[1] }}">
-            </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description">{{ procedure[3] }}</textarea>
+        </div>
 
-            <!-- Bouton pour uploader une image dans la description -->
-            <div class="mb-2">
-                <input type="file" id="uploadDescription" class="form-control d-none" accept="image/*">
-                <button type="button" class="btn btn-primary btn-sm" onclick="uploadImage('uploadDescription', 'description')">📷 Ajouter une image</button>
-            </div>
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" name="description">{{ procedure[3] if procedure else '' }}</textarea>
-            </div>
+        <div class="mb-3">
+            <label for="protocole_resolution" class="form-label">Protocole de Résolution</label>
+            <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure[5] }}</textarea>
+        </div>
 
-            <!-- Bouton pour uploader une image dans le protocole de résolution -->
-            <div class="mb-2">
-                <input type="file" id="uploadResolution" class="form-control d-none" accept="image/*">
-                <button type="button" class="btn btn-primary btn-sm" onclick="uploadImage('uploadResolution', 'protocole_resolution')">📷 Ajouter une image</button>
-            </div>
-            <div class="mb-3">
-                <label for="protocole_resolution" class="form-label">Protocole de Résolution</label>
-                <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure[4] if procedure else '' }}</textarea>
-            </div>
+        <div class="mb-3">
+            <label for="protocole_verification" class="form-label">Protocole de Vérification</label>
+            <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure[6] }}</textarea>
+        </div>
 
-            <!-- Bouton pour uploader une image dans le protocole de vérification -->
-            <div class="mb-2">
-                <input type="file" id="uploadVerification" class="form-control d-none" accept="image/*">
-                <button type="button" class="btn btn-primary btn-sm" onclick="uploadImage('uploadVerification', 'protocole_verification')">📷 Ajouter une image</button>
-            </div>
-            <div class="mb-3">
-                <label for="protocole_verification" class="form-label">Protocole de Vérification</label>
-               <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure[5] if procedure else '' }}</textarea>
-            </div>
+        <div class="mb-3">
+            <label for="base_donnees" class="form-label">Base de Données Impactée</label>
+            <input type="text" class="form-control" id="base_donnees" name="base_donnees" value="{{ procedure[4] }}">
+        </div>
 
-            <div class="mb-3">
-                <label for="acteur" class="form-label">Acteur</label>
-                <input type="text" class="form-control" name="acteur" id="acteur" value="{{ procedure[6] }}">
-            </div>
+        <div class="mb-3">
+            <label for="acteur" class="form-label">Acteur</label>
+            <input type="text" class="form-control" id="acteur" name="acteur" value="{{ procedure[7] }}">
+        </div>
 
-            <div class="mb-3">
-                <label for="verificateur" class="form-label">Vérificateur</label>
-                <input type="text" class="form-control" name="verificateur" id="verificateur" value="{{ procedure[7] }}">
-            </div>
+        <div class="mb-3">
+            <label for="verificateur" class="form-label">Vérificateur</label>
+            <input type="text" class="form-control" id="verificateur" name="verificateur" value="{{ procedure[8] }}">
+        </div>
 
-            <div class="mb-3">
-                <label for="reference_ticket" class="form-label">Référence Ticket</label>
-                <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure[9] }}">
-            </div>
-
-
-            <div class="mb-3">
-                <label for="utilisateur" class="form-label">Utilisateur</label>
-                <input type="text" class="form-control" name="utilisateur" id="utilisateur" value="{{ procedure[11] }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="application_id" class="form-label">Application</label>
-                <select name="application_id" id="application_id" class="form-select">
-                    <option value="">Sélectionner une application</option>
+        <div class="mb-3">
+            <label class="form-label">Sélectionner une Application</label>
+            <div class="input-group">
+                <select id="application_select" class="form-select">
+                    <option value="">-- Sélectionner --</option>
                     {% for app in applications %}
-                        <option value="{{ app[0] }}" {% if app[0] == procedure[8] %}selected{% endif %}>{{ app[1] }}</option>
+                        <option value="{{ app[0] }}" data-color="{{ app[2] }}">{{ app[1] }}</option>
                     {% endfor %}
                 </select>
+                <button type="button" class="btn btn-primary" onclick="addApplication()">Ajouter</button>
             </div>
+        </div>
 
-            <h5>Pièces Jointes :</h5>
-                <ul id="existing_files_list">
-                    {% for file in pieces_jointes_links %}
-                        <li><a href="{{ url_for('open_file', file_path=file) }}" target="_blank">{{ file.split('/')[-1] }}</a></li>
-                    {% endfor %}
-                </ul>
+        <!-- ✅ Affichage des applications sélectionnées -->
+        <div class="mb-3">
+            <label class="form-label">Applications Impactées</label>
+            <div class="application-container" id="selected_applications_list">
+                {% for app in applications_associees %}
+                    <div class="application-item" data-app-id="{{ app[0] }}">
+                        <span class="application-badge"
+                              style="background-color: {{ app[2] }};
+                                     color: white;
+                                     padding: 5px;
+                                     border-radius: 5px;
+                                     display: inline-block;
+                                     margin-right: 8px;">
+                            {{ app[1] }}
+                        </span>
+                        <button type="button" class="btn btn-sm btn-remove" onclick="removeApplication('{{ app[0] }}')">❌</button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
 
-                <button type="button" class="btn btn-secondary" onclick="addFileInput()">Ajouter une pièce jointe</button>
-                <div id="file_inputs_container"></div>
+        <!-- ✅ Champ caché pour stocker les applications sélectionnées -->
+        <input type="hidden" name="application_id" id="application_id" value="{{ ','.join(selected_applications | map('string')) }}">
 
-                <script>
-                    function addFileInput() {
-                        const container = document.getElementById('file_inputs_container');
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.name = 'pieces_jointes[]';
-                        input.className = 'form-control mb-2';
-                        container.appendChild(input);
-                    }
-                </script>
+        <div class="mb-3 file-upload-container">
+            <label for="pieces_jointes" class="form-label">Ajouter des Pièces Jointes</label>
+            <input type="file" class="form-control" id="pieces_jointes" name="pieces_jointes" multiple>
 
-            <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
-            <a href="/" class="btn btn-secondary">Annuler</a>
-        </form>
-    </div>
+            {% if procedure[10] %}
+                <div class="file-preview">
+                    <h5 class="file-label">Fichiers Actuels :</h5>
+                    <ul class="file-list">
+                        {% for file in procedure[10].split(', ') %}
+                            <li><a href="{{ url_for('static', filename='uploads/' + file) }}" target="_blank">{{ file }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+
+        <!-- ✅ Champ caché pour stocker les applications sélectionnées -->
+        <input type="hidden" name="application_id" id="application_id" value="{{ ','.join(selected_applications | map('string')) }}">
+
+        <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary btn-cancel">Annuler</a>
+        <a href="{{ url_for('home') }}" class="btn btn-retour">Retour</a>
+
+    </form>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let textareas = document.querySelectorAll("textarea");
+
+    textareas.forEach(textarea => {
+        textarea.style.height = textarea.scrollHeight + "px"; // Ajuster la hauteur dès le chargement
+
+        textarea.addEventListener("input", function() {
+            this.style.height = "auto"; // Réinitialiser la hauteur
+            this.style.height = (this.scrollHeight) + "px"; // Ajuster en fonction du contenu
+        });
+    });
+});
+</script>
 
 <script>
-$(document).ready(function() {
-    $('#description, #protocole_resolution, #protocole_verification').trumbowyg({
-        btns: [
-            ['viewHTML'],
-            ['formatting'],
-            ['strong', 'em', 'underline'],
-            ['foreColor', 'backColor'],
-            ['link'],
-            ['insertImage'], // Bouton pour insérer une image via une URL
-            ['upload'], // Bouton pour uploader une image
-            ['unorderedList', 'orderedList'],
-            ['removeformat'],
-            ['fullscreen']
-        ],
-        plugins: {
-            upload: {
-                serverPath: "{{ url_for('upload_image') }}",  // URL du serveur Flask pour l’upload
-                fileFieldName: "upload",
-                urlPropertyName: "url",
-                allowedTypes: ["image/png", "image/jpeg", "image/gif"],
-                statusPropertyName: "success",
-                success: function(data, trumbowyg, $modal, values) {
-                    console.log("✅ Upload réussi :", data.url);
+document.addEventListener("DOMContentLoaded", function() {
+    let textareas = document.querySelectorAll("textarea");
 
-                    if (data.url) {
-                        console.log("🔗 URL reçue :", data.url);
+    textareas.forEach(textarea => {
+        textarea.style.height = textarea.scrollHeight + "px"; // Ajuster la hauteur dès le chargement
 
-                        // Copier l'URL dans le presse-papiers
-                        navigator.clipboard.writeText(data.url).then(() => {
-                            alert("📋 L'URL de l'image a été copiée dans le presse-papiers !\n\nLa fenêtre 'Insert Image' va s'ouvrir automatiquement.");
-                        }).catch(err => {
-                            console.error("❌ Erreur de copie dans le presse-papiers :", err);
-                            alert("L'upload a réussi, mais impossible de copier l'URL automatiquement.\n\nCopiez-la manuellement : " + data.url);
-                        });
+        textarea.addEventListener("input", function() {
+            this.style.height = "auto"; // Réinitialiser la hauteur
+            this.style.height = (this.scrollHeight) + "px"; // Ajuster en fonction du contenu
+        });
+    });
 
-                        // Fermer immédiatement la fenêtre d'upload
-                        $modal.find('[data-trumbowyg-modal-close]').click();
-                        console.log("🚪 Fenêtre 'Upload' fermée.");
+    window.addApplication = function() {
+        let select = document.getElementById("application_select");
+        let selectedAppId = select.value;
+        let selectedAppName = select.options[select.selectedIndex].text;
+        let selectedList = document.getElementById("selected_applications_list");
+        let hiddenField = document.getElementById("application_id");
 
-                        // Ouvrir immédiatement la fenêtre "Insert Image"
-                        setTimeout(function() {
-                            console.log("📂 Ouverture de la fenêtre 'Insert Image'");
-                            $('.trumbowyg-insertImage-button').click();
+        if (selectedAppId && !document.getElementById("app_" + selectedAppId)) {
+            let listItem = document.createElement("li");
+            listItem.id = "app_" + selectedAppId;
+            listItem.innerHTML = `${selectedAppName}
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeApplication('${selectedAppId}')">❌</button>`;
+            selectedList.appendChild(listItem);
 
-                            // Attendre que la fenêtre s'affiche, puis coller l'URL
-                            setTimeout(function() {
-                                // console.log("✍️ Collage de l'URL dans la fenêtre 'Insert Image'");
-                                $('.trumbowyg-modal input[type=text]').val(data.url);
-                                trumbowyg.execCmd('insertImage', data.url);
-                            }, 300);
-                        }, 300);
-                        $modal.remove();
-                    } else {
-                        console.error("❌ Problème d'URL, image non insérée.");
-                        alert("L'upload a réussi, mais l'URL est introuvable.");
-                    }
-                },
-                error: function(error) {
-                    console.error("❌ Erreur d'upload :", error);
-                    alert("Erreur lors de l'upload de l'image !");
-                }
+            // Ajouter l'ID au champ caché
+            if (hiddenField.value) {
+                hiddenField.value += "," + selectedAppId;
+            } else {
+                hiddenField.value = selectedAppId;
             }
         }
-    });
+    };
 
-    console.log("✅ Trumbowyg avec upload d'images est bien initialisé !");
+    window.removeApplication = function(appId) {
+        document.getElementById("app_" + appId).remove();
+        let hiddenField = document.getElementById("application_id");
+        let apps = hiddenField.value.split(",");
+        hiddenField.value = apps.filter(id => id !== appId).join(",");
+    };
+
+    // ✅ Appliquer la couleur du contour en fonction de la première application
+    let container = document.querySelector(".procedure-container");
+    let appColors = "{{ procedure[12] }}".split(", ");
+    if (appColors.length > 0 && appColors[0]) {
+        container.style.borderColor = appColors[0];
+    }
 });
 </script>
 
-
-
 <script>
-$(document).ready(function() {
-    console.log("✅ jQuery est bien chargé :", typeof $ !== "undefined");
-    console.log("✅ Trumbowyg est bien chargé :", typeof $.trumbowyg !== "undefined");
-});
+function removeApplication(appId) {
+    document.getElementById("app_" + appId).remove();
+    let hiddenField = document.getElementById("application_id");
+    let apps = hiddenField.value.split(",");
+    hiddenField.value = apps.filter(id => id !== appId).join(",");
+}
 </script>
-
 <script>
-$(document).ready(function() {
-    $('.trumbowyg-button-pane').on('click', '.trumbowyg-insertImage-button', function() {
-        console.log("📸 Bouton d'ajout d'image cliqué !");
-    });
+function removeApplication(appId) {
+    let appElement = document.querySelector(`[data-app-id='${appId}']`);
+    if (appElement) {
+        appElement.remove();
+    }
+
+    let hiddenField = document.getElementById("application_id");
+    let apps = hiddenField.value.split(",");
+    hiddenField.value = apps.filter(id => id !== appId).join(",");
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let hiddenField = document.getElementById("application_id");
+    let selectedList = document.getElementById("selected_applications_list");
+
+    window.addApplication = function() {
+        let select = document.getElementById("application_select");
+        let selectedAppId = select.value;
+        let selectedAppName = select.options[select.selectedIndex].text;
+
+        // ✅ Récupérer la couleur depuis l'attribut data
+        let selectedAppColor = select.options[select.selectedIndex].getAttribute("data-color") || "#cccccc";
+
+        if (selectedAppId && !document.querySelector(`[data-app-id="${selectedAppId}"]`)) {
+            // ✅ Ajouter l'application sélectionnée à la liste affichée
+            let listItem = document.createElement("div");
+            listItem.classList.add("application-item");
+            listItem.setAttribute("data-app-id", selectedAppId);
+            listItem.innerHTML = `
+                <span class="application-badge"
+                      style="background-color: ${selectedAppColor};
+                             color: white;
+                             padding: 5px;
+                             border-radius: 5px;
+                             display: inline-block;
+                             margin-right: 8px;">
+                    ${selectedAppName}
+                </span>
+                <button type="button" class="btn btn-sm btn-remove" onclick="removeApplication('${selectedAppId}')">❌</button>
+            `;
+            selectedList.appendChild(listItem);
+
+            // ✅ Ajouter l'ID au champ caché
+            let apps = hiddenField.value ? hiddenField.value.split(",") : [];
+            apps.push(selectedAppId);
+            hiddenField.value = apps.join(",");
+        }
+    };
+
+    window.removeApplication = function(appId) {
+        let appElement = document.querySelector(`[data-app-id='${appId}']`);
+        if (appElement) {
+            appElement.remove();
+        }
+
+        // ✅ Mettre à jour le champ caché
+        let apps = hiddenField.value ? hiddenField.value.split(",") : [];
+        hiddenField.value = apps.filter(id => id !== appId).join(",");
+    };
 });
 </script>
 

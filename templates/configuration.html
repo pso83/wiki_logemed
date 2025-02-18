@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Configuration</h1>
+
+        <!-- Onglets pour Applications et Utilisateurs -->
+        <ul class="nav nav-tabs" id="configTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="applications-tab" data-bs-toggle="tab" href="#applications">Applications</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="users-tab" data-bs-toggle="tab" href="#users">Utilisateurs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="services-tab" data-bs-toggle="tab" href="#services">Services</a>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-3">
+            <!-- Onglet Applications -->
+            <div class="tab-pane fade show active" id="applications">
+                <div class="card p-4 mb-4">
+                    <h3>Ajouter une Application</h3>
+                    <form method="POST" action="{{ url_for('configuration') }}">
+                        <div class="mb-3">
+                            <label for="app_name" class="form-label">Nom de l'Application</label>
+                            <input type="text" class="form-control" id="app_name" name="app_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="app_color" class="form-label">Couleur</label>
+                            <input type="color" class="form-control form-control-color" id="app_color" name="app_color" value="#000000">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+
+                <div class="card p-4">
+                    <h3>Modifier une Application</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Couleur</th>
+                                <th>Modifier</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                            <tr>
+                                <td>{{ app[1] }}</td>
+                                <td>
+                                    <input type="color" class="form-control form-control-color" id="color_{{ app[0] }}" value="{{ app[2] }}">
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('update_application', app_id=app[0]) }}">
+                                        <input type="hidden" name="new_color" id="hidden_color_{{ app[0] }}" value="{{ app[2] }}">
+                                        <button type="submit" class="btn btn-warning">Mettre à jour</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <script>
+                                document.getElementById("color_{{ app[0] }}").addEventListener("change", function() {
+                                    document.getElementById("hidden_color_{{ app[0] }}").value = this.value;
+                                });
+                            </script>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Onglet Utilisateurs -->
+            <div class="tab-pane fade" id="users">
+                <div class="card p-4 mb-4">
+                    <h3>Ajouter un Utilisateur</h3>
+                    <form method="POST" action="{{ url_for('add_user') }}">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nom d'utilisateur</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="service" class="form-label">Service</label>
+                            <select class="form-select" id="service" name="service">
+                                <option value="">Sélectionner un service</option>
+                                {% for service in services %}
+                                    <option value="{{ service[0] }}">{{ service[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+                <div class="card p-4">
+                    <h3>Liste des Utilisateurs</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nom d'utilisateur</th>
+                                <th>Service</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user[1] }}</td>
+                                <td>{{ user[2] if user[2] else 'Non défini' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('update_user_service', user_id=user[0]) }}">
+                                        <select name="service" class="form-select">
+                                            <option value="">Aucun</option>
+                                            {% for service in services %}
+                                                <option value="{{ service[0] }}" {% if user[2] == service[1] %}selected{% endif %}>{{ service[1] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-success mt-2">Modifier</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('update_user_admin', user_id=user[0]) }}">
+                                        <input type="hidden" name="is_admin" value="{{ 'False' if user[3] else 'True' }}">
+                                        <button type="submit" class="btn btn-{{ 'danger' if user[3] else 'success' }}">
+                                            {{ 'Retirer Admin' if user[3] else 'Rendre Admin' }}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="services">
+            <div class="card p-4 mb-4">
+                <h3>Ajouter un Service</h3>
+                <form method="POST" action="{{ url_for('add_service') }}">
+                    <div class="mb-3">
+                        <label for="service_name" class="form-label">Nom du Service</label>
+                        <input type="text" class="form-control" id="service_name" name="service_name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+            </div>
+
+            <div class="card p-4">
+                <h3>Liste des Services</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nom du Service</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in services %}
+                        <tr>
+                            <td>
+                                <form method="POST" action="{{ url_for('update_service', service_id=service[0]) }}">
+                                    <input type="text" name="new_name" class="form-control" value="{{ service[1] }}">
+                                    <button type="submit" class="btn btn-success mt-2">Modifier</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('delete_service', service_id=service[0]) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
