@@ -143,6 +143,7 @@ def view_procedure(id):
                            formatted_resolution=formatted_resolution,
                            formatted_verification=formatted_verification)
 
+
 @app.route('/')
 def home():
     if 'user_id' not in session:
@@ -151,12 +152,10 @@ def home():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ✅ Récupérer la liste des applications disponibles pour le filtre
-    cursor.execute("SELECT id, nom FROM applications")
-    applications = cursor.fetchall()
+    search_keywords = request.args.get('search_keywords', '').strip()
+    search_application = request.args.get('search_application', '').strip()
 
-    # ✅ Récupérer les procédures actives
-    cursor.execute("""
+    query = """
         SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, 
                GROUP_CONCAT(a.nom SEPARATOR ', ') AS applications, 
                p.statut, p.est_supprime, p.utilisateur,
@@ -164,17 +163,49 @@ def home():
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
-        WHERE p.est_supprime = 0 OR p.est_supprime IS NULL
-        GROUP BY p.id
-    """)
+        WHERE (p.est_supprime = 0 OR p.est_supprime IS NULL)
+    """
+
+    params = []
+
+    # ✅ Vérification du type de recherche (avec "#" uniquement sur mots-clés, sans "#" sur tous les champs)
+    if search_keywords:
+        keywords = [kw.strip() for kw in search_keywords.split("#") if kw.strip()]
+
+        if search_keywords.startswith("#"):  # ✅ Recherche uniquement sur "mots_cles"
+            keyword_conditions = " OR ".join(["p.mots_cles LIKE %s" for _ in keywords])
+            query += f" AND ({keyword_conditions})"
+            params.extend([f"%{kw}%" for kw in keywords])
+        else:  # ✅ Recherche sur "titre", "description", "mots_cles" et "reference_ticket"
+            keyword_conditions = " OR ".join([
+                "p.titre LIKE %s",
+                "p.description LIKE %s",
+                "p.mots_cles LIKE %s",
+                "p.reference_ticket LIKE %s"
+            ])
+            query += f" AND ({keyword_conditions})"
+            params.extend([f"%{search_keywords}%" for _ in range(4)])  # ✅ Applique à tous les champs
+
+    # ✅ Filtrage par application
+    if search_application:
+        query += " AND p.id IN (SELECT pa2.procedure_id FROM procedure_applications pa2 WHERE pa2.application_id = %s)"
+        params.append(search_application)
+
+    query += " GROUP BY p.id"
+
+    cursor.execute(query, params)
     procedures = cursor.fetchall()
 
-    # ✅ Récupérer le nombre de procédures "À valider" (uniquement pour les modérateurs)
+    cursor.execute("SELECT id, nom FROM applications")
+    applications = cursor.fetchall()
+
+    # ✅ Récupérer le nombre de procédures "À valider" pour les modérateurs
     cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'À valider'")
     procedures_a_valider = cursor.fetchone()[0]
 
     # ✅ Récupérer le nombre de procédures "Rejetées" pour l'utilisateur connecté
-    cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'Rejetée' AND utilisateur = %s", (session['username'],))
+    cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'Rejetée' AND utilisateur = %s",
+                   (session['username'],))
     procedures_a_corriger = cursor.fetchone()[0]
 
     cursor.close()
@@ -183,9 +214,10 @@ def home():
     return render_template('home.html',
                            procedures=procedures,
                            applications=applications,
+                           search_keywords=search_keywords,
+                           search_application=search_application,
                            procedures_a_valider=procedures_a_valider,
                            procedures_a_corriger=procedures_a_corriger)
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -561,28 +593,17 @@ def update_user_admin(user_id):
 @app.route('/validate_procedure/<int:id>', methods=['POST'])
 def validate_procedure(id):
     if 'user_id' not in session or not session.get("est_moderateur"):
-        flash("❌ Accès refusé : Vous devez être modérateur pour valider une procédure.", "danger")
-        return redirect(url_for('home'))
-
-    date_validation = datetime.now()
-    date_expiration = date_validation + timedelta(days=90)  # 3 mois après validation
+        return redirect(url_for('login'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
-
-    # Mettre à jour le statut et les dates de validation et d'expiration
-    cursor.execute("""
-        UPDATE procedures 
-        SET statut = 'Validée', date_validation = %s, date_expiration = %s 
-        WHERE id = %s
-    """, (date_validation, date_expiration, id))
-
+    cursor.execute("UPDATE procedures SET statut = 'Validée' WHERE id = %s", (id,))
     conn.commit()
     cursor.close()
     conn.close()
 
-    flash("✅ Procédure validée avec succès !", "success")
-    return redirect(url_for('gestion_procedures_a_verifier'))
+    flash("La procédure a été validée avec succès.", "success")
+    return redirect(url_for('home'))  # ✅ Retourner à `home` au lieu de `gestion_a_verifier`
 
 @app.route('/soft_delete/<int:id>', methods=['POST'])
 def soft_delete(id):
@@ -628,34 +649,17 @@ def gestion_procedures_a_verifier():
 @app.route('/reject_procedure/<int:id>', methods=['POST'])
 def reject_procedure(id):
     if 'user_id' not in session or not session.get("est_moderateur"):
-        flash("❌ Accès refusé : Vous devez être modérateur pour rejeter une procédure.", "danger")
-        return redirect(url_for('home'))
+        return redirect(url_for('login'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
-
-    # Récupérer l'utilisateur qui a rédigé la procédure
-    cursor.execute("SELECT utilisateur FROM procedures WHERE id = %s", (id,))
-    utilisateur = cursor.fetchone()
-
-    if utilisateur:
-        # ✅ Mettre à jour le statut de la procédure en "Rejetée"
-        cursor.execute("UPDATE procedures SET statut = 'Rejetée' WHERE id = %s", (id,))
-        conn.commit()
-
-        # ✅ Ajouter une notification pour l'utilisateur
-        cursor.execute("""
-            INSERT INTO notifications (user_id, message)
-            VALUES ((SELECT id FROM utilisateurs WHERE utilisateur = %s), %s)
-        """, (utilisateur[0], f"⚠️ Votre procédure (ID: {id}) a été rejetée. Veuillez la modifier."))
-
-        conn.commit()
-
+    cursor.execute("UPDATE procedures SET statut = 'Rejetée' WHERE id = %s", (id,))
+    conn.commit()
     cursor.close()
     conn.close()
 
-    flash("🚫 Procédure rejetée avec succès.", "warning")
-    return redirect(url_for('gestion_procedures_a_verifier'))
+    flash("La procédure a été rejetée.", "danger")
+    return redirect(url_for('home'))  # ✅ Retourner à `home` au lieu de `gestion_a_verifier`
 
 @app.route('/correct_procedure/<int:id>', methods=['POST'])
 def correct_procedure(id):
