@@ -4,13 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Procédures Supprimées</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* ✅ Style pour les badges */
+        .application-badge {
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        /* ✅ Espacement entre les boutons */
+        .btn-group-custom {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* ✅ Espacement entre les lignes du tableau */
+        .table tbody tr {
+            vertical-align: middle;
+        }
+
+        /* ✅ Conteneur des applications */
+        .application-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+    </style>
 </head>
 <body>
 
 <div class="container mt-5">
     <h1 class="text-center mb-4">Procédures Supprimées</h1>
 
+    <!-- ✅ Boutons de navigation bien espacés -->
+    <div class="btn-group-custom">
+        <a href="{{ url_for('configuration') }}" class="btn btn-secondary">Retour</a>
+        <a href="{{ url_for('deleted_procedures') }}" class="btn btn-danger">Procédures supprimées</a>
+    </div>
+
+    <!-- ✅ Tableau des procédures supprimées -->
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
             <tr>
@@ -21,34 +58,40 @@
                 <th>Applications Impactées</th>
                 <th>Statut</th>
                 <th>Auteur</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for procedure in procedures %}
             <tr>
-                <td>{{ procedure[1] }}</td>  <!-- Titre -->
-                <td>{{ procedure[2] }}</td>  <!-- Description -->
-                <td>{{ procedure[3] }}</td>  <!-- Mots-clés -->
-                <td>{{ procedure[4] }}</td>  <!-- Ticket -->
+                <td>{{ procedure[1] }}</td>
+                <td>{{ procedure[2] }}</td>
+                <td>{{ procedure[3] }}</td>
+                <td>{{ procedure[4] }}</td>
                 <td>
-                    <span class="application-badge">
-                        {{ procedure[5] if procedure[5] else 'Aucune application' }}
-                    </span>
+                    <div class="application-container">
+                        {% if procedure[5] %}
+                            {% set applications = procedure[5].split(', ') %}
+                            {% for app in applications %}
+                                <span class="application-badge" style="background-color: #dc3545; color: white;">
+                                    {{ app }}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="application-badge" style="background-color: black; color: white;">
+                                Aucune application
+                            </span>
+                        {% endif %}
+                    </div>
                 </td>
-                <td>{{ procedure[6] }}</td>  <!-- Statut -->
-                <td>{{ procedure[7] }}</td>  <!-- Auteur -->
-                <td>
-                    <a href="{{ url_for('view_procedure', id=procedure[0]) }}" class="btn btn-info btn-sm">Afficher</a>
-                </td>
+                <td><span class="badge bg-secondary">{{ procedure[6] }}</span></td>
+                <td>{{ procedure[7] }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <!-- ✅ Bouton Retour -->
-    <a href="{{ url_for('home') }}" class="btn btn-retour">Retour</a>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

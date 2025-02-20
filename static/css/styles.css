@@ -579,3 +579,42 @@ pre {
 .btn-danger {
     margin-left: 10px;
 }
+/* ✅ Espacement correct entre les boutons dans configuration */
+.d-flex.gap-3 {
+    gap: 15px;
+}
+/* ✅ Style des badges d'application */
+.application-badge {
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* ✅ Style du tableau des statuts */
+.badge {
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 5px;
+}
+
+/* ✅ Aligner les boutons d'action sur une seule ligne */
+.btn-group-custom {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* ✅ Aligner les applications impactées proprement */
+.application-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+/* ✅ Espacement et mise en forme des alertes */
+.alert {
+    max-width: 500px;
+    display: inline-block;
+}

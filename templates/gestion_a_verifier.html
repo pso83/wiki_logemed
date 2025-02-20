@@ -17,74 +17,57 @@
                     <th>Description</th>
                     <th>Mots-clés</th>
                     <th>Ticket</th>
-                    <th>Application</th>
+                    <th>Applications Impactées</th>
                     <th>Statut</th>
-                    <th>Date de Validation</th>
-                    <th>Date d'Expiration</th>
+                    <th>Auteur</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for procedure in procedures_a_verifier %}
+                {% for procedure in procedures %}
                 <tr>
-                    <td>{{ procedure[1] }}</td>  <!-- Titre -->
-                    <td>{{ procedure[2] }}</td>  <!-- Description -->
-                    <td>{{ procedure[3] }}</td>  <!-- Mots-clés -->
-                    <td>{{ procedure[4] }}</td>  <!-- Ticket -->
+                    <td>{{ procedure[1] }}</td>  <!-- ✅ Titre -->
+                    <td>{{ procedure[2] }}</td>  <!-- ✅ Description -->
+                    <td>{{ procedure[3] }}</td>  <!-- ✅ Mots-clés -->
+                    <td>{{ procedure[4] }}</td>  <!-- ✅ Ticket -->
                     <td>
-                        <span class="application-badge" style="background-color: {{ procedure[6] }};">
-                            {{ procedure[5] }}
-                        </span>
+                        <div class="application-container">
+                            {% if procedure[5] and procedure[5] != '' %}
+                                {% set applications = procedure[5].split(', ') if procedure[5] is string else [] %}
+                                {% set couleurs = procedure[6].split(', ') if procedure[6] is string else [] %}
+                                {% for app in applications %}
+                                    <span class="application-badge"
+                                          style="background-color: {{ couleurs[loop.index0] if couleurs|length > loop.index0 else '#cccccc' }};
+                                                 color: white;
+                                                 padding: 5px;
+                                                 border-radius: 5px;
+                                                 display: inline-block;
+                                                 margin: 2px;">
+                                        {{ app }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="application-badge" style="background-color: black; color: white; padding: 5px; border-radius: 5px;">
+                                    Aucune application
+                                </span>
+                            {% endif %}
+                        </div>
                     </td>
-                    <td>
-                        <span class="badge
-                            {% if procedure[7] == 'À valider' %} bg-danger
-                            {% elif procedure[7] == 'À vérifier' %} bg-warning
-                            {% elif procedure[7] == 'Validée' %} bg-success
-                            {% elif procedure[7] == 'Rejetée' %} bg-danger {% endif %}">
-                            {{ procedure[7] }}
-                            {% if procedure[7] == 'Rejetée' %} ⚠️ {% endif %}
-                        </span>
-                    </td>
-
-                    <td>{{ procedure[8] if procedure[8] else 'N/A' }}</td>  <!-- Date de Validation -->
-                    <td>{{ procedure[9] if procedure[9] else 'N/A' }}</td>  <!-- Date d'Expiration -->
+                    <td><span class="badge bg-warning">{{ procedure[7] }}</span></td>  <!-- ✅ Statut -->
+                    <td>{{ procedure[8] }}</td>  <!-- ✅ Auteur -->
                     <td>
                         <a href="{{ url_for('view_procedure', id=procedure[0]) }}" class="btn btn-info btn-sm">Afficher</a>
-
-                        {% if procedure[7] == 'Rejetée' %}
-                            <a href="{{ url_for('edit_procedure', id=procedure[0]) }}" class="btn btn-warning btn-sm">Corriger</a>
-                        {% else %}
-                            <a href="{{ url_for('edit_procedure', id=procedure[0]) }}" class="btn btn-warning btn-sm">Modifier</a>
-                        {% endif %}
-
-                        <!-- Bouton pour valider une procédure (seulement pour modérateurs) -->
-                        {% if procedure[7] in ['À valider', 'À vérifier'] and session.get("est_moderateur") %}
-                            <form method="POST" action="{{ url_for('validate_procedure', id=procedure[0]) }}" style="display:inline;">
-                                <button type="submit" class="btn btn-success btn-sm">Valider</button>
-                            </form>
-                        {% endif %}
-
-                        <!-- Bouton pour rejeter une procédure (seulement pour modérateurs) -->
-                        {% if procedure[7] in ['À valider', 'À vérifier'] and session.get("est_moderateur") %}
-                            <form method="POST" action="{{ url_for('reject_procedure', id=procedure[0]) }}" style="display:inline;">
-                                <button type="submit" class="btn btn-danger btn-sm">Rejeter</button>
-                            </form>
-                        {% endif %}
-
-                        <!-- Bouton pour corriger une procédure ety la faire repasser en "à valider" (seulement pour modérateurs) -->
-                        {% if procedure[7] == 'Rejetée' %}
-                            <form method="POST" action="{{ url_for('correct_procedure', id=procedure[0]) }}" style="display:inline;">
-                                <button type="submit" class="btn btn-primary btn-sm">Corriger</button>
-                            </form>
-                        {% endif %}
-
+                        <form method="POST" action="{{ url_for('validate_procedure', id=procedure[0]) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-sm">Valider</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('reject_procedure', id=procedure[0]) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Rejeter</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
         <div class="text-center mt-4">
             <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
         </div>

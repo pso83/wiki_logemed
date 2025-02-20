@@ -29,31 +29,35 @@
 
         <div class="mb-3">
             <label for="protocole_resolution" class="form-label">Protocole de Résolution</label>
-            <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure[5] }}</textarea>
+            <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure[6] }}</textarea>
         </div>
 
         <div class="mb-3">
             <label for="protocole_verification" class="form-label">Protocole de Vérification</label>
-            <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure[6] }}</textarea>
+            <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure[7] }}</textarea>
         </div>
 
         <div class="mb-3">
             <label for="base_donnees" class="form-label">Base de Données Impactée</label>
-            <input type="text" class="form-control" id="base_donnees" name="base_donnees" value="{{ procedure[4] }}">
+            <input type="text" class="form-control" id="base_donnees" name="base_donnees" value="{{ procedure[5] }}">
         </div>
-
+        <div class="mb-3">
+            <label for="reference_ticket" class="form-label">Référence Ticket</label>
+            <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure[4] }}">
+        </div>
         <div class="mb-3">
             <label for="acteur" class="form-label">Acteur</label>
-            <input type="text" class="form-control" id="acteur" name="acteur" value="{{ procedure[7] }}">
+            <input type="text" class="form-control" id="acteur" name="acteur" value="{{ procedure[8] }}">
         </div>
 
         <div class="mb-3">
             <label for="verificateur" class="form-label">Vérificateur</label>
-            <input type="text" class="form-control" id="verificateur" name="verificateur" value="{{ procedure[8] }}">
+            <input type="text" class="form-control" id="verificateur" name="verificateur" value="{{ procedure[9] }}">
         </div>
 
+        <!-- ✅ Sélection des Applications -->
         <div class="mb-3">
-            <label class="form-label">Sélectionner une Application</label>
+            <label for="application_select" class="form-label">Sélectionner une Application</label>
             <div class="input-group">
                 <select id="application_select" class="form-select">
                     <option value="">-- Sélectionner --</option>
@@ -65,7 +69,7 @@
             </div>
         </div>
 
-        <!-- ✅ Affichage des applications sélectionnées -->
+        <!-- ✅ Affichage des Applications Sélectionnées -->
         <div class="mb-3">
             <label class="form-label">Applications Impactées</label>
             <div class="application-container" id="selected_applications_list">
@@ -80,11 +84,15 @@
                                      margin-right: 8px;">
                             {{ app[1] }}
                         </span>
-                        <button type="button" class="btn btn-sm btn-remove" onclick="removeApplication('{{ app[0] }}')">❌</button>
+                        <button type="button" class="btn btn-sm btn-danger btn-remove" onclick="removeApplication('{{ app[0] }}')">❌</button>
                     </div>
                 {% endfor %}
             </div>
         </div>
+
+
+        <!-- ✅ Champ caché pour stocker les applications sélectionnées -->
+        <input type="hidden" name="application_id" id="application_id" value="{{ ','.join(selected_applications | map('string')) }}">
 
         <!-- ✅ Champ caché pour stocker les applications sélectionnées -->
         <input type="hidden" name="application_id" id="application_id" value="{{ ','.join(selected_applications | map('string')) }}">
@@ -93,22 +101,17 @@
             <label for="pieces_jointes" class="form-label">Ajouter des Pièces Jointes</label>
             <input type="file" class="form-control" id="pieces_jointes" name="pieces_jointes" multiple>
 
-            {% if procedure[10] %}
+            {% if procedure[11] %}
                 <div class="file-preview">
                     <h5 class="file-label">Fichiers Actuels :</h5>
                     <ul class="file-list">
-                        {% for file in procedure[10].split(', ') %}
+                        {% for file in procedure[11].split(', ') %}
                             <li><a href="{{ url_for('static', filename='uploads/' + file) }}" target="_blank">{{ file }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
             {% endif %}
         </div>
-
-
-        <!-- ✅ Champ caché pour stocker les applications sélectionnées -->
-        <input type="hidden" name="application_id" id="application_id" value="{{ ','.join(selected_applications | map('string')) }}">
-
         <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
         <a href="{{ url_for('home') }}" class="btn btn-secondary btn-cancel">Annuler</a>
         <a href="{{ url_for('home') }}" class="btn btn-retour">Retour</a>
@@ -129,79 +132,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 </script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    let textareas = document.querySelectorAll("textarea");
-
-    textareas.forEach(textarea => {
-        textarea.style.height = textarea.scrollHeight + "px"; // Ajuster la hauteur dès le chargement
-
-        textarea.addEventListener("input", function() {
-            this.style.height = "auto"; // Réinitialiser la hauteur
-            this.style.height = (this.scrollHeight) + "px"; // Ajuster en fonction du contenu
-        });
-    });
-
-    window.addApplication = function() {
-        let select = document.getElementById("application_select");
-        let selectedAppId = select.value;
-        let selectedAppName = select.options[select.selectedIndex].text;
-        let selectedList = document.getElementById("selected_applications_list");
-        let hiddenField = document.getElementById("application_id");
-
-        if (selectedAppId && !document.getElementById("app_" + selectedAppId)) {
-            let listItem = document.createElement("li");
-            listItem.id = "app_" + selectedAppId;
-            listItem.innerHTML = `${selectedAppName}
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeApplication('${selectedAppId}')">❌</button>`;
-            selectedList.appendChild(listItem);
-
-            // Ajouter l'ID au champ caché
-            if (hiddenField.value) {
-                hiddenField.value += "," + selectedAppId;
-            } else {
-                hiddenField.value = selectedAppId;
-            }
-        }
-    };
-
-    window.removeApplication = function(appId) {
-        document.getElementById("app_" + appId).remove();
-        let hiddenField = document.getElementById("application_id");
-        let apps = hiddenField.value.split(",");
-        hiddenField.value = apps.filter(id => id !== appId).join(",");
-    };
-
-    // ✅ Appliquer la couleur du contour en fonction de la première application
-    let container = document.querySelector(".procedure-container");
-    let appColors = "{{ procedure[12] }}".split(", ");
-    if (appColors.length > 0 && appColors[0]) {
-        container.style.borderColor = appColors[0];
-    }
-});
-</script>
-
-<script>
-function removeApplication(appId) {
-    document.getElementById("app_" + appId).remove();
-    let hiddenField = document.getElementById("application_id");
-    let apps = hiddenField.value.split(",");
-    hiddenField.value = apps.filter(id => id !== appId).join(",");
-}
-</script>
-<script>
-function removeApplication(appId) {
-    let appElement = document.querySelector(`[data-app-id='${appId}']`);
-    if (appElement) {
-        appElement.remove();
-    }
-
-    let hiddenField = document.getElementById("application_id");
-    let apps = hiddenField.value.split(",");
-    hiddenField.value = apps.filter(id => id !== appId).join(",");
-}
-</script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     let hiddenField = document.getElementById("application_id");
@@ -211,12 +141,9 @@ document.addEventListener("DOMContentLoaded", function() {
         let select = document.getElementById("application_select");
         let selectedAppId = select.value;
         let selectedAppName = select.options[select.selectedIndex].text;
-
-        // ✅ Récupérer la couleur depuis l'attribut data
-        let selectedAppColor = select.options[select.selectedIndex].getAttribute("data-color") || "#cccccc";
+        let selectedAppColor = select.options[select.selectedIndex].getAttribute("data-color") || "#cccccc"; // ✅ Récupérer la couleur
 
         if (selectedAppId && !document.querySelector(`[data-app-id="${selectedAppId}"]`)) {
-            // ✅ Ajouter l'application sélectionnée à la liste affichée
             let listItem = document.createElement("div");
             listItem.classList.add("application-item");
             listItem.setAttribute("data-app-id", selectedAppId);
@@ -230,11 +157,10 @@ document.addEventListener("DOMContentLoaded", function() {
                              margin-right: 8px;">
                     ${selectedAppName}
                 </span>
-                <button type="button" class="btn btn-sm btn-remove" onclick="removeApplication('${selectedAppId}')">❌</button>
+                <button type="button" class="btn btn-sm btn-danger btn-remove" onclick="removeApplication('${selectedAppId}')">❌</button>
             `;
             selectedList.appendChild(listItem);
 
-            // ✅ Ajouter l'ID au champ caché
             let apps = hiddenField.value ? hiddenField.value.split(",") : [];
             apps.push(selectedAppId);
             hiddenField.value = apps.join(",");
@@ -247,12 +173,32 @@ document.addEventListener("DOMContentLoaded", function() {
             appElement.remove();
         }
 
-        // ✅ Mettre à jour le champ caché
         let apps = hiddenField.value ? hiddenField.value.split(",") : [];
         hiddenField.value = apps.filter(id => id !== appId).join(",");
     };
 });
 </script>
 
+<script>
+function removeApplication(appId) {
+    document.getElementById("app_" + appId).remove();
+    let hiddenField = document.getElementById("application_id");
+    let apps = hiddenField.value.split(",");
+    hiddenField.value = apps.filter(id => id !== appId).join(",");
+}
+</script>
+
+<script>
+function removeApplication(appId) {
+    let appElement = document.querySelector(`[data-app-id='${appId}']`);
+    if (appElement) {
+        appElement.remove();
+    }
+
+    let hiddenField = document.getElementById("application_id");
+    let apps = hiddenField.value.split(",");
+    hiddenField.value = apps.filter(id => id !== appId).join(",");
+}
+</script>
 </body>
 </html>

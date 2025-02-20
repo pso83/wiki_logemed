@@ -4,6 +4,7 @@ import uuid
 import os
 import re
 import markdown
+import logging
 from ftplib import FTP
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
@@ -284,55 +285,72 @@ def edit_procedure(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ✅ Récupérer la procédure
+    # ✅ Récupérer la procédure avec les bonnes colonnes
     cursor.execute("""
-        SELECT id, titre, mots_cles, description, base_donnees, 
+        SELECT id, titre, mots_cles, description, reference_ticket, base_donnees, 
                protocole_resolution, protocole_verification, 
                acteur, verificateur, utilisateur, pieces_jointes, statut
         FROM procedures WHERE id = %s
     """, (id,))
     procedure = cursor.fetchone()
 
-    # ✅ Si la procédure était rejetée, la remettre "À valider"
-    if procedure[11] == "Rejetée":
-        cursor.execute("UPDATE procedures SET statut = 'À valider' WHERE id = %s", (id,))
-        conn.commit()
-
     if request.method == 'POST':
-        # ✅ Récupération des données
         titre = request.form['titre']
+        mots_cles = request.form['mots_cles']
         description = request.form['description']
+        reference_ticket = request.form['reference_ticket']
+        base_donnees = request.form['base_donnees']
+        protocole_resolution = request.form['protocole_resolution']
+        protocole_verification = request.form['protocole_verification']
         applications = request.form.get('application_id', '')
 
-        # ✅ Gestion des fichiers
-        file = request.files.get("pieces_jointes")
-        pieces_jointes = procedure[10]  # Garder les fichiers existants
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            pieces_jointes = filename
+        # ✅ S'assurer que le statut est toujours défini et ne peut pas être NULL
+        ancien_statut = procedure[11] if procedure[11] else "À valider"
+        nouveau_statut = "À valider" if ancien_statut in ["Rejetée", "Validée", "À vérifier", None] else ancien_statut
 
-        # ✅ Mise à jour
         cursor.execute("""
             UPDATE procedures 
-            SET titre=%s, description=%s, pieces_jointes=%s 
+            SET titre=%s, mots_cles=%s, description=%s, reference_ticket=%s, base_donnees=%s, 
+                protocole_resolution=%s, protocole_verification=%s, statut=%s
             WHERE id=%s
-        """, (titre, description, pieces_jointes, id))
+        """, (titre, mots_cles, description, reference_ticket, base_donnees, protocole_resolution, protocole_verification, nouveau_statut, id))
 
-        # ✅ Mise à jour des applications
-        cursor.execute("DELETE FROM procedure_applications WHERE procedure_id = %s", (id,))
+        # ✅ Vérification et insertion des applications sélectionnées
+        cursor.execute("SELECT application_id FROM procedure_applications WHERE procedure_id = %s", (id,))
+        current_applications = {str(row[0]) for row in cursor.fetchall()}  # Convertir en set
+
         if applications:
-            for app_id in applications.split(","):
-                cursor.execute("INSERT INTO procedure_applications (procedure_id, application_id) VALUES (%s, %s)", (id, app_id))
+            applications_list = set(applications.split(","))  # Convertir en set pour éviter les doublons
+
+            # ✅ Ajouter uniquement les nouvelles applications
+            new_applications = applications_list - current_applications
+            for app_id in new_applications:
+                if app_id.strip():  # Vérifier que l’ID n'est pas vide
+                    cursor.execute("INSERT INTO procedure_applications (procedure_id, application_id) VALUES (%s, %s)", (id, app_id.strip()))
 
         conn.commit()
         cursor.close()
         conn.close()
-
         return redirect(url_for('home'))
 
-    return render_template('edit_procedure.html', procedure=procedure)
+    cursor.execute("SELECT id, nom, couleur FROM applications")
+    applications = cursor.fetchall()
 
+    cursor.execute("""
+        SELECT a.id, a.nom, a.couleur
+        FROM procedure_applications pa
+        JOIN applications a ON pa.application_id = a.id
+        WHERE pa.procedure_id = %s
+    """, (id,))
+    applications_associees = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('edit_procedure.html',
+                           procedure=procedure,
+                           applications=applications,
+                           applications_associees=applications_associees)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_procedure():
@@ -621,30 +639,51 @@ def soft_delete(id):
     flash("🚮 Procédure supprimée (marquée comme rayée).", "info")
     return redirect(url_for('home'))
 
+logging.basicConfig(filename='debug.log', level=logging.DEBUG, format='%(asctime)s - %(message)s')
+
+# ✅ Activer les logs pour voir toutes les routes disponibles
+for rule in app.url_map.iter_rules():
+    logging.debug(f"Route disponible: {rule}")
+
+import logging
+
+
 @app.route('/gestion_a_verifier')
-def gestion_procedures_a_verifier():
-    if 'user_id' not in session:
+def gestion_a_verifier():
+    logging.debug("DEBUG - La route /gestion_a_verifier a été appelée")  # ❌ Supprime flush=True
+
+    if 'user_id' not in session or not session.get("est_moderateur"):
+        logging.debug("Accès refusé : utilisateur non connecté ou non modérateur")
         return redirect(url_for('login'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Récupérer les procédures "À vérifier" et "À valider"
     cursor.execute("""
-        SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, 
-               COALESCE(a.nom, 'Non spécifiée') AS application_name, 
-               COALESCE(a.couleur, '#5D5D5D') AS application_color, 
-               p.statut, p.date_validation, p.date_expiration
+        SELECT p.id, 
+               p.titre, 
+               p.description, 
+               p.mots_cles, 
+               p.reference_ticket, 
+               COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications, 
+               COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs, 
+               p.statut, 
+               p.utilisateur
         FROM procedures p
-        LEFT JOIN applications a ON p.application_id = a.id
+        LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
+        LEFT JOIN applications a ON pa.application_id = a.id
         WHERE p.statut IN ('À vérifier', 'À valider')
+        GROUP BY p.id
     """)
-    procedures_a_verifier = cursor.fetchall()
+    procedures = cursor.fetchall()
+
+    logging.debug(f"DEBUG - Procedures récupérées ({len(procedures)} lignes): {procedures}")
 
     cursor.close()
     conn.close()
 
-    return render_template('gestion_a_verifier.html', procedures_a_verifier=procedures_a_verifier)
+    return render_template('gestion_a_verifier.html', procedures=procedures)
+
 
 @app.route('/reject_procedure/<int:id>', methods=['POST'])
 def reject_procedure(id):
@@ -726,7 +765,11 @@ def gestion_procedures_a_valider():
     cursor.close()
     conn.close()
 
-    return render_template('gestion_procedures_a_valider.html', procedures=procedures_a_valider)
+    return render_template('gestion_a_verifier.html', procedures=procedures_a_valider)
+
+# ✅ Vérifier toutes les routes définies dans Flask
+for rule in app.url_map.iter_rules():
+    logging.debug(f"Route disponible : {rule}")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
