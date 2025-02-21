@@ -8,9 +8,17 @@ import logging
 from ftplib import FTP
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
+from markupsafe import Markup
 
 # backend
 app = Flask(__name__)
+
+# ✅ Activer le logging pour voir les routes disponibles
+logging.basicConfig(level=logging.DEBUG)
+
+# ✅ Afficher toutes les routes enregistrées dans Flask
+for rule in app.url_map.iter_rules():
+    logging.debug(f"Route disponible: {rule}")
 
 # Configuration du dossier des images
 UPLOAD_FOLDER = "static/uploads"
@@ -50,6 +58,7 @@ def get_db_connection():
 def format_code_blocks(text):
     return re.sub(r'\[(.*?)\]', r'<pre><code class="sql">\1</code></pre>', text, flags=re.DOTALL)
 
+
 # Fonction pour téléverser un fichier sur le serveur FTP
 def upload_file_to_ftp(file, filename):
     with FTP(FTP_HOST) as ftp:
@@ -71,6 +80,21 @@ def is_admin():
 
 def is_moderateur():
     return session.get("est_moderateur", False) == True
+
+# ✅ Définition de la fonction AVANT de l'ajouter aux filtres Jinja
+def convertir_markdown(texte):
+    if texte:
+        # ✅ Remplace les textes entre [..] par un `<span class="code-block">`
+        texte = re.sub(r'\[(.*?)\]', r'<span class="code-block">\1</span>', texte)
+
+        # ✅ Convertit ensuite en HTML avec Markdown
+        texte_html = markdown.markdown(texte, extensions=["extra", "nl2br", "sane_lists"])
+
+        return Markup(texte_html)  # ✅ Markup garantit que le HTML généré est bien interprété
+    return ""
+
+# ✅ Ajouter la fonction comme filtre Jinja
+app.jinja_env.filters['convertir_markdown'] = convertir_markdown
 
 @app.route('/preview/<path:filename>')
 def preview_file(filename):
@@ -116,6 +140,15 @@ def view_procedure(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # ✅ Incrémente le compteur de vues
+    cursor.execute("UPDATE procedures SET vues = vues + 1 WHERE id = %s", (id,))
+    conn.commit()
+
+    cursor.execute(
+        "SELECT id, titre, description, mots_cles, reference_ticket, likes, dislikes, vues FROM procedures WHERE id = %s",
+        (id,))
+    procedure = cursor.fetchone()
+
     # ✅ Récupérer toutes les informations de la procédure
     cursor.execute("""
         SELECT p.id, p.titre, p.mots_cles, p.description, p.base_donnees, 
@@ -158,18 +191,20 @@ def home():
 
     query = """
         SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, 
-               GROUP_CONCAT(a.nom SEPARATOR ', ') AS applications, 
-               p.statut, p.est_supprime, p.utilisateur,
-               GROUP_CONCAT(a.couleur SEPARATOR ', ') AS couleurs  
+               COALESCE(CAST(GROUP_CONCAT(DISTINCT a.nom SEPARATOR ', ') AS CHAR), '') AS applications, 
+               p.statut, p.vues, p.likes, p.dislikes,  
+               COALESCE(CAST(GROUP_CONCAT(DISTINCT a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs,  
+               p.utilisateur
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
         WHERE (p.est_supprime = 0 OR p.est_supprime IS NULL)
+        GROUP BY p.id
     """
 
     params = []
 
-    # ✅ Vérification du type de recherche (avec "#" uniquement sur mots-clés, sans "#" sur tous les champs)
+    # ✅ Recherche avancée
     if search_keywords:
         keywords = [kw.strip() for kw in search_keywords.split("#") if kw.strip()]
 
@@ -177,7 +212,7 @@ def home():
             keyword_conditions = " OR ".join(["p.mots_cles LIKE %s" for _ in keywords])
             query += f" AND ({keyword_conditions})"
             params.extend([f"%{kw}%" for kw in keywords])
-        else:  # ✅ Recherche sur "titre", "description", "mots_cles" et "reference_ticket"
+        else:  # ✅ Recherche sur plusieurs champs
             keyword_conditions = " OR ".join([
                 "p.titre LIKE %s",
                 "p.description LIKE %s",
@@ -185,29 +220,44 @@ def home():
                 "p.reference_ticket LIKE %s"
             ])
             query += f" AND ({keyword_conditions})"
-            params.extend([f"%{search_keywords}%" for _ in range(4)])  # ✅ Applique à tous les champs
+            params.extend([f"%{search_keywords}%" for _ in range(4)])
 
     # ✅ Filtrage par application
     if search_application:
         query += " AND p.id IN (SELECT pa2.procedure_id FROM procedure_applications pa2 WHERE pa2.application_id = %s)"
         params.append(search_application)
 
-    query += " GROUP BY p.id"
-
     cursor.execute(query, params)
     procedures = cursor.fetchall()
+
+    # ✅ Forcer toutes les colonnes susceptibles de contenir du texte en `str`
+    procedures = [
+        (
+            p[0], p[1], p[2], p[3], p[4],
+            str(p[5]) if isinstance(p[5], int) else p[5],  # ✅ Convertir applications en str
+            p[6], p[7], p[8],
+            str(p[10]) if isinstance(p[10], int) else p[10],  # ✅ Convertir couleurs en str
+            p[11]
+        )
+        for p in procedures
+    ]
+
+    for procedure in procedures:
+        print(f"DEBUG - ID: {procedure[0]}, Applications: {procedure[5]}, Couleurs: {procedure[10]}")
 
     cursor.execute("SELECT id, nom FROM applications")
     applications = cursor.fetchall()
 
     # ✅ Récupérer le nombre de procédures "À valider" pour les modérateurs
     cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'À valider'")
-    procedures_a_valider = cursor.fetchone()[0]
+    procedures_a_valider = cursor.fetchone()
+    procedures_a_valider = procedures_a_valider[0] if procedures_a_valider else 0  # ✅ Correction pour éviter None
 
     # ✅ Récupérer le nombre de procédures "Rejetées" pour l'utilisateur connecté
     cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'Rejetée' AND utilisateur = %s",
                    (session['username'],))
-    procedures_a_corriger = cursor.fetchone()[0]
+    procedures_a_corriger = cursor.fetchone()
+    procedures_a_corriger = procedures_a_corriger[0] if procedures_a_corriger else 0  # ✅ Correction pour éviter None
 
     cursor.close()
     conn.close()
@@ -639,19 +689,8 @@ def soft_delete(id):
     flash("🚮 Procédure supprimée (marquée comme rayée).", "info")
     return redirect(url_for('home'))
 
-logging.basicConfig(filename='debug.log', level=logging.DEBUG, format='%(asctime)s - %(message)s')
-
-# ✅ Activer les logs pour voir toutes les routes disponibles
-for rule in app.url_map.iter_rules():
-    logging.debug(f"Route disponible: {rule}")
-
-import logging
-
-
 @app.route('/gestion_a_verifier')
 def gestion_a_verifier():
-    logging.debug("DEBUG - La route /gestion_a_verifier a été appelée")  # ❌ Supprime flush=True
-
     if 'user_id' not in session or not session.get("est_moderateur"):
         logging.debug("Accès refusé : utilisateur non connecté ou non modérateur")
         return redirect(url_for('login'))
@@ -676,8 +715,6 @@ def gestion_a_verifier():
         GROUP BY p.id
     """)
     procedures = cursor.fetchall()
-
-    logging.debug(f"DEBUG - Procedures récupérées ({len(procedures)} lignes): {procedures}")
 
     cursor.close()
     conn.close()
@@ -752,24 +789,47 @@ def deleted_procedures():
 
 @app.route('/gestion_procedures_a_valider')
 def gestion_procedures_a_valider():
-    if 'user_id' not in session:
+    if 'user_id' not in session or not session.get("est_moderateur"):
         return redirect(url_for('login'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ✅ Récupérer les procédures "À valider"
-    cursor.execute("SELECT * FROM procedures WHERE statut = 'À valider'")
+    cursor.execute("SELECT id, titre, description, statut FROM procedures WHERE statut = 'À valider'")
     procedures_a_valider = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template('gestion_a_verifier.html', procedures=procedures_a_valider)
+    return render_template('gestion_procedures_a_valider.html', procedures=procedures_a_valider)
 
-# ✅ Vérifier toutes les routes définies dans Flask
-for rule in app.url_map.iter_rules():
-    logging.debug(f"Route disponible : {rule}")
+
+@app.route('/like/<int:id>', methods=['POST'])
+def like_procedure(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE procedures SET likes = likes + 1 WHERE id = %s", (id,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('home'))
+
+@app.route('/dislike/<int:id>', methods=['POST'])
+def dislike_procedure(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE procedures SET dislikes = dislikes + 1 WHERE id = %s", (id,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('home'))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

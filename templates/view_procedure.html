@@ -18,7 +18,7 @@
 
     <div class="mb-3">
         <h5>Description :</h5>
-        <div class="description-box">{{ formatted_description | safe }}</div>
+        <td class="markdown-content">{{ procedure[2] | convertir_markdown }}</td>  <!-- ✅ Description -->
     </div>
 
     <div class="mb-3">
@@ -28,12 +28,12 @@
 
     <div class="mb-3">
         <h5>Protocole de Résolution :</h5>
-        <div class="description-box">{{ formatted_resolution | safe }}</div>
+        <td class="markdown-content">{{ procedure[5] | convertir_markdown }}</td>  <!-- ✅ Protocole de Résolution -->
     </div>
 
     <div class="mb-3">
         <h5>Protocole de Vérification :</h5>
-        <div class="description-box">{{ formatted_verification | safe }}</div>
+        <td class="markdown-content">{{ procedure[6] | convertir_markdown }}</td>  <!-- ✅ Protocole de Vérification -->
     </div>
 
     <div class="mb-3">

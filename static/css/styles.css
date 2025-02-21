@@ -618,3 +618,266 @@ pre {
     max-width: 500px;
     display: inline-block;
 }
+/* ✅ Style pour la gestion du Markdown */
+.markdown-content {
+    white-space: pre-wrap;  /* ✅ Garde les retours à la ligne */
+    word-wrap: break-word;  /* ✅ Évite les débordements */
+    font-family: Arial, sans-serif; /* ✅ Police lisible */
+    font-size: 14px;
+    line-height: 1.6;  /* ✅ Améliore la lisibilité */
+}
+
+/* ✅ Style pour les blocs de code */
+.markdown-content code {
+    background-color: #f4f4f4;
+    color: #d63384;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+/* ✅ Style pour les blocs de citation */
+.markdown-content blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 10px;
+    margin-left: 0;
+    color: #555;
+    font-style: italic;
+}
+
+/* ✅ Style pour les listes */
+.markdown-content ul {
+    padding-left: 20px;
+}
+
+.markdown-content ol {
+    padding-left: 20px;
+}
+
+/* ✅ Style pour les titres */
+.markdown-content h1, .markdown-content h2, .markdown-content h3 {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* ✅ Style pour les liens */
+.markdown-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.markdown-content a:hover {
+    text-decoration: underline;
+}
+/* ✅ Style spécifique pour les codes entre [..] */
+.code-block {
+    background-color: #f4f4f4;
+    color: #d63384;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* ✅ Style général du Markdown */
+.markdown-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ✅ Style pour les images insérées dans le Markdown */
+.markdown-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+}
+
+/* ✅ Style pour les citations */
+.markdown-content blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 10px;
+    margin-left: 0;
+    color: #555;
+    font-style: italic;
+}
+
+/* ✅ Style pour les listes */
+.markdown-content ul, .markdown-content ol {
+    padding-left: 20px;
+}
+
+/* ✅ Style pour les titres */
+.markdown-content h1, .markdown-content h2, .markdown-content h3 {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* ✅ Style pour les liens */
+.markdown-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.markdown-content a:hover {
+    text-decoration: underline;
+}
+/* ✅ Style pour le texte entre [..] */
+.code-block {
+    background-color: #f4f4f4;
+    color: #d63384;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* ✅ Style général du Markdown */
+.markdown-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ✅ Style pour les images insérées */
+.markdown-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+}
+
+/* ✅ Style pour les listes */
+.markdown-content ul, .markdown-content ol {
+    padding-left: 20px;
+}
+
+/* ✅ Style pour les citations */
+.markdown-content blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 10px;
+    margin-left: 0;
+    color: #555;
+    font-style: italic;
+}
+
+/* ✅ Style pour le code inline */
+.markdown-content code {
+    background-color: #eee;
+    padding: 2px 4px;
+    font-family: 'Courier New', monospace;
+    border-radius: 4px;
+}
+
+/* ✅ Style pour les liens */
+.markdown-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.markdown-content a:hover {
+    text-decoration: underline;
+}
+/* ✅ Barre d’interaction sous chaque procédure */
+.interaction-bar {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 5px;
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* ✅ Boutons stylés pour J'aime / J'aime pas */
+.btn-outline-success, .btn-outline-danger {
+    border-radius: 20px;
+    font-size: 14px;
+    padding: 3px 10px;
+    margin-left: 5px;
+}
+
+/* ✅ Amélioration des badges Statut */
+.badge {
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+/* ✅ Style pour les cartes des procédures */
+.procedure-card {
+    border-radius: 12px;
+    box-shadow: 3px 4px 10px rgba(0, 0, 0, 0.2); /* ✅ Moins de relief */
+    margin-bottom: 10px; /* ✅ Réduction de l'espacement */
+    overflow: hidden;
+    background-color: #ffffff;
+    transition: transform 0.2s ease-in-out;
+    border-width: 2px; /* ✅ Contour plus visible */
+}
+
+.procedure-card:hover {
+    transform: translateY(-3px); /* ✅ Effet léger au survol */
+}
+
+/* ✅ Couleur de fond du titre */
+.procedure-title {
+    padding: 15px;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* ✅ Barre d’interaction sous chaque procédure */
+.interaction-bar {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 5px;
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* ✅ Style des boutons de vote */
+.btn-outline-success, .btn-outline-danger {
+    border-radius: 20px;
+    font-size: 14px;
+    padding: 3px 10px;
+    margin-left: 5px;
+}
+
+/* ✅ Style des applications impactées */
+.application-badge {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 3px;
+    text-align: center;
+}
+
+/* ✅ Style des badges de statut */
+.badge {
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+/* ✅ Style du texte dans la carte */
+.card-body {
+    padding: 15px;
+}
+
+/* ✅ Style des boutons d'action */
+.btn-sm {
+    margin-right: 5px;
+}
+
+/* ✅ Effet d'ombre plus marqué sur les cartes */
+.procedure-card {
+    box-shadow: 6px 8px 20px rgba(0, 0, 0, 0.3);
+}

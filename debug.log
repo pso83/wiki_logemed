@@ -884,3 +884,657 @@
 2025-02-20 09:15:34,191 - DEBUG - Procedures récupérées (1 lignes): ((19, 'resultat trompette', 'edfgdsfsdfdsqfdfdfd\r\nfgfgfdgsdf\r\ngfsdgsdfgdsf\r\ngdsfgdsf\r\ngdsfgdsfgfds', '#Trompette', 'Ici normalement : ref tck', 'RESEBLOC, SI ONCO, LEA, SI SCAN, SIP ACTES', '#3f5c94, #8c4c59, #5F8347, #7C2DB3, #6ABF1D', 'À valider', 'Paul'),)
 2025-02-20 09:15:34,192 - 127.0.0.1 - - [20/Feb/2025 09:15:34] "GET /gestion_a_verifier HTTP/1.1" 200 -
 2025-02-20 09:15:37,161 - 127.0.0.1 - - [20/Feb/2025 09:15:37] "GET / HTTP/1.1" 200 -
+2025-02-20 09:27:01,082 - Route disponible: /static/<path:filename>
+2025-02-20 09:27:01,083 - Route disponible: /preview/<path:filename>
+2025-02-20 09:27:01,083 - Route disponible: /view/<int:id>
+2025-02-20 09:27:01,083 - Route disponible: /
+2025-02-20 09:27:01,083 - Route disponible: /login
+2025-02-20 09:27:01,083 - Route disponible: /logout
+2025-02-20 09:27:01,083 - Route disponible: /delete/<int:id>
+2025-02-20 09:27:01,083 - Route disponible: /edit/<int:id>
+2025-02-20 09:27:01,083 - Route disponible: /add
+2025-02-20 09:27:01,083 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:27:01,083 - Route disponible: /open_file/<path:file_path>
+2025-02-20 09:27:01,083 - Route disponible: /upload_image
+2025-02-20 09:27:01,083 - Route disponible: /serve_image/<path:filename>
+2025-02-20 09:27:01,084 - Route disponible: /configuration
+2025-02-20 09:27:01,084 - Route disponible: /update_application/<int:app_id>
+2025-02-20 09:27:01,084 - Route disponible: /add_user
+2025-02-20 09:27:01,084 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 09:27:01,084 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 09:27:01,084 - Route disponible: /add_service
+2025-02-20 09:27:01,084 - Route disponible: /update_service/<int:service_id>
+2025-02-20 09:27:01,084 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 09:27:01,084 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 09:27:01,085 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 09:27:01,085 - Route disponible: /soft_delete/<int:id>
+2025-02-20 09:27:01,087 - Route disponible : /static/<path:filename>
+2025-02-20 09:27:01,088 - Route disponible : /preview/<path:filename>
+2025-02-20 09:27:01,088 - Route disponible : /view/<int:id>
+2025-02-20 09:27:01,088 - Route disponible : /
+2025-02-20 09:27:01,088 - Route disponible : /login
+2025-02-20 09:27:01,088 - Route disponible : /logout
+2025-02-20 09:27:01,088 - Route disponible : /delete/<int:id>
+2025-02-20 09:27:01,088 - Route disponible : /edit/<int:id>
+2025-02-20 09:27:01,088 - Route disponible : /add
+2025-02-20 09:27:01,088 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:27:01,088 - Route disponible : /open_file/<path:file_path>
+2025-02-20 09:27:01,088 - Route disponible : /upload_image
+2025-02-20 09:27:01,088 - Route disponible : /serve_image/<path:filename>
+2025-02-20 09:27:01,088 - Route disponible : /configuration
+2025-02-20 09:27:01,089 - Route disponible : /update_application/<int:app_id>
+2025-02-20 09:27:01,089 - Route disponible : /add_user
+2025-02-20 09:27:01,089 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 09:27:01,089 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 09:27:01,089 - Route disponible : /add_service
+2025-02-20 09:27:01,089 - Route disponible : /update_service/<int:service_id>
+2025-02-20 09:27:01,089 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 09:27:01,089 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 09:27:01,089 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 09:27:01,089 - Route disponible : /soft_delete/<int:id>
+2025-02-20 09:27:01,089 - Route disponible : /gestion_a_verifier
+2025-02-20 09:27:01,089 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 09:27:01,089 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 09:27:01,089 - Route disponible : /deleted_procedures
+2025-02-20 09:27:01,089 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 09:27:01,134 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.110.114:8080
+2025-02-20 09:27:01,134 - [33mPress CTRL+C to quit[0m
+2025-02-20 09:27:01,136 -  * Restarting with stat
+2025-02-20 09:27:01,652 - Route disponible: /static/<path:filename>
+2025-02-20 09:27:01,652 - Route disponible: /preview/<path:filename>
+2025-02-20 09:27:01,652 - Route disponible: /view/<int:id>
+2025-02-20 09:27:01,653 - Route disponible: /
+2025-02-20 09:27:01,653 - Route disponible: /login
+2025-02-20 09:27:01,653 - Route disponible: /logout
+2025-02-20 09:27:01,653 - Route disponible: /delete/<int:id>
+2025-02-20 09:27:01,653 - Route disponible: /edit/<int:id>
+2025-02-20 09:27:01,653 - Route disponible: /add
+2025-02-20 09:27:01,653 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:27:01,653 - Route disponible: /open_file/<path:file_path>
+2025-02-20 09:27:01,653 - Route disponible: /upload_image
+2025-02-20 09:27:01,653 - Route disponible: /serve_image/<path:filename>
+2025-02-20 09:27:01,653 - Route disponible: /configuration
+2025-02-20 09:27:01,653 - Route disponible: /update_application/<int:app_id>
+2025-02-20 09:27:01,653 - Route disponible: /add_user
+2025-02-20 09:27:01,653 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 09:27:01,653 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 09:27:01,654 - Route disponible: /add_service
+2025-02-20 09:27:01,654 - Route disponible: /update_service/<int:service_id>
+2025-02-20 09:27:01,654 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 09:27:01,654 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 09:27:01,654 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 09:27:01,654 - Route disponible: /soft_delete/<int:id>
+2025-02-20 09:27:01,657 - Route disponible : /static/<path:filename>
+2025-02-20 09:27:01,657 - Route disponible : /preview/<path:filename>
+2025-02-20 09:27:01,657 - Route disponible : /view/<int:id>
+2025-02-20 09:27:01,657 - Route disponible : /
+2025-02-20 09:27:01,657 - Route disponible : /login
+2025-02-20 09:27:01,657 - Route disponible : /logout
+2025-02-20 09:27:01,657 - Route disponible : /delete/<int:id>
+2025-02-20 09:27:01,657 - Route disponible : /edit/<int:id>
+2025-02-20 09:27:01,657 - Route disponible : /add
+2025-02-20 09:27:01,657 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:27:01,657 - Route disponible : /open_file/<path:file_path>
+2025-02-20 09:27:01,657 - Route disponible : /upload_image
+2025-02-20 09:27:01,657 - Route disponible : /serve_image/<path:filename>
+2025-02-20 09:27:01,657 - Route disponible : /configuration
+2025-02-20 09:27:01,657 - Route disponible : /update_application/<int:app_id>
+2025-02-20 09:27:01,658 - Route disponible : /add_user
+2025-02-20 09:27:01,658 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 09:27:01,658 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 09:27:01,658 - Route disponible : /add_service
+2025-02-20 09:27:01,658 - Route disponible : /update_service/<int:service_id>
+2025-02-20 09:27:01,658 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 09:27:01,658 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 09:27:01,658 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 09:27:01,658 - Route disponible : /soft_delete/<int:id>
+2025-02-20 09:27:01,658 - Route disponible : /gestion_a_verifier
+2025-02-20 09:27:01,658 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 09:27:01,658 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 09:27:01,658 - Route disponible : /deleted_procedures
+2025-02-20 09:27:01,658 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 09:27:01,686 -  * Debugger is active!
+2025-02-20 09:27:01,694 -  * Debugger PIN: 839-106-180
+2025-02-20 09:27:04,945 - 127.0.0.1 - - [20/Feb/2025 09:27:04] "GET / HTTP/1.1" 200 -
+2025-02-20 09:27:07,605 - 127.0.0.1 - - [20/Feb/2025 09:27:07] "GET / HTTP/1.1" 200 -
+2025-02-20 09:27:08,222 - 127.0.0.1 - - [20/Feb/2025 09:27:08] "GET / HTTP/1.1" 200 -
+2025-02-20 09:27:13,858 - 127.0.0.1 - - [20/Feb/2025 09:27:13] "GET /view/7 HTTP/1.1" 200 -
+2025-02-20 09:27:14,262 - 127.0.0.1 - - [20/Feb/2025 09:27:14] "GET /static/css/styles.css HTTP/1.1" 200 -
+2025-02-20 09:28:11,670 - Route disponible: /static/<path:filename>
+2025-02-20 09:28:11,671 - Route disponible: /preview/<path:filename>
+2025-02-20 09:28:11,671 - Route disponible: /view/<int:id>
+2025-02-20 09:28:11,671 - Route disponible: /
+2025-02-20 09:28:11,671 - Route disponible: /login
+2025-02-20 09:28:11,671 - Route disponible: /logout
+2025-02-20 09:28:11,671 - Route disponible: /delete/<int:id>
+2025-02-20 09:28:11,671 - Route disponible: /edit/<int:id>
+2025-02-20 09:28:11,671 - Route disponible: /add
+2025-02-20 09:28:11,671 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:28:11,671 - Route disponible: /open_file/<path:file_path>
+2025-02-20 09:28:11,671 - Route disponible: /upload_image
+2025-02-20 09:28:11,671 - Route disponible: /serve_image/<path:filename>
+2025-02-20 09:28:11,672 - Route disponible: /configuration
+2025-02-20 09:28:11,672 - Route disponible: /update_application/<int:app_id>
+2025-02-20 09:28:11,672 - Route disponible: /add_user
+2025-02-20 09:28:11,672 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 09:28:11,672 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 09:28:11,672 - Route disponible: /add_service
+2025-02-20 09:28:11,672 - Route disponible: /update_service/<int:service_id>
+2025-02-20 09:28:11,672 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 09:28:11,672 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 09:28:11,672 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 09:28:11,672 - Route disponible: /soft_delete/<int:id>
+2025-02-20 09:28:11,675 - Route disponible : /static/<path:filename>
+2025-02-20 09:28:11,675 - Route disponible : /preview/<path:filename>
+2025-02-20 09:28:11,675 - Route disponible : /view/<int:id>
+2025-02-20 09:28:11,675 - Route disponible : /
+2025-02-20 09:28:11,675 - Route disponible : /login
+2025-02-20 09:28:11,676 - Route disponible : /logout
+2025-02-20 09:28:11,676 - Route disponible : /delete/<int:id>
+2025-02-20 09:28:11,676 - Route disponible : /edit/<int:id>
+2025-02-20 09:28:11,676 - Route disponible : /add
+2025-02-20 09:28:11,676 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:28:11,676 - Route disponible : /open_file/<path:file_path>
+2025-02-20 09:28:11,676 - Route disponible : /upload_image
+2025-02-20 09:28:11,676 - Route disponible : /serve_image/<path:filename>
+2025-02-20 09:28:11,676 - Route disponible : /configuration
+2025-02-20 09:28:11,676 - Route disponible : /update_application/<int:app_id>
+2025-02-20 09:28:11,676 - Route disponible : /add_user
+2025-02-20 09:28:11,676 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 09:28:11,676 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 09:28:11,676 - Route disponible : /add_service
+2025-02-20 09:28:11,676 - Route disponible : /update_service/<int:service_id>
+2025-02-20 09:28:11,677 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 09:28:11,677 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 09:28:11,677 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 09:28:11,677 - Route disponible : /soft_delete/<int:id>
+2025-02-20 09:28:11,677 - Route disponible : /gestion_a_verifier
+2025-02-20 09:28:11,677 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 09:28:11,677 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 09:28:11,677 - Route disponible : /deleted_procedures
+2025-02-20 09:28:11,677 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 09:28:11,730 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.110.114:8080
+2025-02-20 09:28:11,731 - [33mPress CTRL+C to quit[0m
+2025-02-20 09:28:11,733 -  * Restarting with stat
+2025-02-20 09:28:12,329 - Route disponible: /static/<path:filename>
+2025-02-20 09:28:12,329 - Route disponible: /preview/<path:filename>
+2025-02-20 09:28:12,329 - Route disponible: /view/<int:id>
+2025-02-20 09:28:12,329 - Route disponible: /
+2025-02-20 09:28:12,330 - Route disponible: /login
+2025-02-20 09:28:12,330 - Route disponible: /logout
+2025-02-20 09:28:12,330 - Route disponible: /delete/<int:id>
+2025-02-20 09:28:12,330 - Route disponible: /edit/<int:id>
+2025-02-20 09:28:12,330 - Route disponible: /add
+2025-02-20 09:28:12,330 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:28:12,330 - Route disponible: /open_file/<path:file_path>
+2025-02-20 09:28:12,330 - Route disponible: /upload_image
+2025-02-20 09:28:12,330 - Route disponible: /serve_image/<path:filename>
+2025-02-20 09:28:12,330 - Route disponible: /configuration
+2025-02-20 09:28:12,330 - Route disponible: /update_application/<int:app_id>
+2025-02-20 09:28:12,330 - Route disponible: /add_user
+2025-02-20 09:28:12,330 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 09:28:12,330 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 09:28:12,330 - Route disponible: /add_service
+2025-02-20 09:28:12,331 - Route disponible: /update_service/<int:service_id>
+2025-02-20 09:28:12,331 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 09:28:12,331 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 09:28:12,331 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 09:28:12,331 - Route disponible: /soft_delete/<int:id>
+2025-02-20 09:28:12,333 - Route disponible : /static/<path:filename>
+2025-02-20 09:28:12,334 - Route disponible : /preview/<path:filename>
+2025-02-20 09:28:12,334 - Route disponible : /view/<int:id>
+2025-02-20 09:28:12,334 - Route disponible : /
+2025-02-20 09:28:12,334 - Route disponible : /login
+2025-02-20 09:28:12,334 - Route disponible : /logout
+2025-02-20 09:28:12,334 - Route disponible : /delete/<int:id>
+2025-02-20 09:28:12,334 - Route disponible : /edit/<int:id>
+2025-02-20 09:28:12,334 - Route disponible : /add
+2025-02-20 09:28:12,334 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:28:12,334 - Route disponible : /open_file/<path:file_path>
+2025-02-20 09:28:12,334 - Route disponible : /upload_image
+2025-02-20 09:28:12,334 - Route disponible : /serve_image/<path:filename>
+2025-02-20 09:28:12,334 - Route disponible : /configuration
+2025-02-20 09:28:12,334 - Route disponible : /update_application/<int:app_id>
+2025-02-20 09:28:12,334 - Route disponible : /add_user
+2025-02-20 09:28:12,335 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 09:28:12,335 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 09:28:12,335 - Route disponible : /add_service
+2025-02-20 09:28:12,335 - Route disponible : /update_service/<int:service_id>
+2025-02-20 09:28:12,335 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 09:28:12,335 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 09:28:12,335 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 09:28:12,335 - Route disponible : /soft_delete/<int:id>
+2025-02-20 09:28:12,335 - Route disponible : /gestion_a_verifier
+2025-02-20 09:28:12,335 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 09:28:12,335 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 09:28:12,335 - Route disponible : /deleted_procedures
+2025-02-20 09:28:12,335 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 09:28:12,362 -  * Debugger is active!
+2025-02-20 09:28:12,369 -  * Debugger PIN: 839-106-180
+2025-02-20 09:28:23,152 - 127.0.0.1 - - [20/Feb/2025 09:28:23] "GET / HTTP/1.1" 200 -
+2025-02-20 09:28:25,783 - 127.0.0.1 - - [20/Feb/2025 09:28:25] "[32mPOST /validate_procedure/7 HTTP/1.1[0m" 302 -
+2025-02-20 09:28:26,398 - 127.0.0.1 - - [20/Feb/2025 09:28:26] "GET / HTTP/1.1" 200 -
+2025-02-20 09:28:27,750 - 127.0.0.1 - - [20/Feb/2025 09:28:27] "GET /view/7 HTTP/1.1" 200 -
+2025-02-20 09:28:28,129 - 127.0.0.1 - - [20/Feb/2025 09:28:28] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-02-20 09:28:37,979 - 127.0.0.1 - - [20/Feb/2025 09:28:37] "GET / HTTP/1.1" 200 -
+2025-02-20 09:28:40,759 - 127.0.0.1 - - [20/Feb/2025 09:28:40] "GET /view/9 HTTP/1.1" 200 -
+2025-02-20 09:28:41,050 - 127.0.0.1 - - [20/Feb/2025 09:28:41] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-02-20 09:28:53,741 - Route disponible: /static/<path:filename>
+2025-02-20 09:28:53,741 - Route disponible: /preview/<path:filename>
+2025-02-20 09:28:53,741 - Route disponible: /view/<int:id>
+2025-02-20 09:28:53,741 - Route disponible: /
+2025-02-20 09:28:53,741 - Route disponible: /login
+2025-02-20 09:28:53,741 - Route disponible: /logout
+2025-02-20 09:28:53,741 - Route disponible: /delete/<int:id>
+2025-02-20 09:28:53,742 - Route disponible: /edit/<int:id>
+2025-02-20 09:28:53,742 - Route disponible: /add
+2025-02-20 09:28:53,742 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:28:53,742 - Route disponible: /open_file/<path:file_path>
+2025-02-20 09:28:53,742 - Route disponible: /upload_image
+2025-02-20 09:28:53,742 - Route disponible: /serve_image/<path:filename>
+2025-02-20 09:28:53,742 - Route disponible: /configuration
+2025-02-20 09:28:53,742 - Route disponible: /update_application/<int:app_id>
+2025-02-20 09:28:53,742 - Route disponible: /add_user
+2025-02-20 09:28:53,742 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 09:28:53,742 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 09:28:53,742 - Route disponible: /add_service
+2025-02-20 09:28:53,742 - Route disponible: /update_service/<int:service_id>
+2025-02-20 09:28:53,742 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 09:28:53,742 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 09:28:53,743 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 09:28:53,743 - Route disponible: /soft_delete/<int:id>
+2025-02-20 09:28:53,746 - Route disponible : /static/<path:filename>
+2025-02-20 09:28:53,746 - Route disponible : /preview/<path:filename>
+2025-02-20 09:28:53,746 - Route disponible : /view/<int:id>
+2025-02-20 09:28:53,746 - Route disponible : /
+2025-02-20 09:28:53,746 - Route disponible : /login
+2025-02-20 09:28:53,746 - Route disponible : /logout
+2025-02-20 09:28:53,746 - Route disponible : /delete/<int:id>
+2025-02-20 09:28:53,746 - Route disponible : /edit/<int:id>
+2025-02-20 09:28:53,746 - Route disponible : /add
+2025-02-20 09:28:53,746 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:28:53,747 - Route disponible : /open_file/<path:file_path>
+2025-02-20 09:28:53,747 - Route disponible : /upload_image
+2025-02-20 09:28:53,747 - Route disponible : /serve_image/<path:filename>
+2025-02-20 09:28:53,747 - Route disponible : /configuration
+2025-02-20 09:28:53,747 - Route disponible : /update_application/<int:app_id>
+2025-02-20 09:28:53,747 - Route disponible : /add_user
+2025-02-20 09:28:53,747 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 09:28:53,747 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 09:28:53,747 - Route disponible : /add_service
+2025-02-20 09:28:53,747 - Route disponible : /update_service/<int:service_id>
+2025-02-20 09:28:53,747 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 09:28:53,747 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 09:28:53,747 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 09:28:53,747 - Route disponible : /soft_delete/<int:id>
+2025-02-20 09:28:53,747 - Route disponible : /gestion_a_verifier
+2025-02-20 09:28:53,747 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 09:28:53,747 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 09:28:53,748 - Route disponible : /deleted_procedures
+2025-02-20 09:28:53,748 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 09:28:53,789 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.110.114:8080
+2025-02-20 09:28:53,789 - [33mPress CTRL+C to quit[0m
+2025-02-20 09:28:53,792 -  * Restarting with stat
+2025-02-20 09:28:54,400 - Route disponible: /static/<path:filename>
+2025-02-20 09:28:54,400 - Route disponible: /preview/<path:filename>
+2025-02-20 09:28:54,400 - Route disponible: /view/<int:id>
+2025-02-20 09:28:54,400 - Route disponible: /
+2025-02-20 09:28:54,401 - Route disponible: /login
+2025-02-20 09:28:54,401 - Route disponible: /logout
+2025-02-20 09:28:54,401 - Route disponible: /delete/<int:id>
+2025-02-20 09:28:54,401 - Route disponible: /edit/<int:id>
+2025-02-20 09:28:54,401 - Route disponible: /add
+2025-02-20 09:28:54,401 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:28:54,401 - Route disponible: /open_file/<path:file_path>
+2025-02-20 09:28:54,401 - Route disponible: /upload_image
+2025-02-20 09:28:54,401 - Route disponible: /serve_image/<path:filename>
+2025-02-20 09:28:54,401 - Route disponible: /configuration
+2025-02-20 09:28:54,401 - Route disponible: /update_application/<int:app_id>
+2025-02-20 09:28:54,401 - Route disponible: /add_user
+2025-02-20 09:28:54,401 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 09:28:54,401 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 09:28:54,401 - Route disponible: /add_service
+2025-02-20 09:28:54,402 - Route disponible: /update_service/<int:service_id>
+2025-02-20 09:28:54,402 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 09:28:54,402 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 09:28:54,402 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 09:28:54,402 - Route disponible: /soft_delete/<int:id>
+2025-02-20 09:28:54,404 - Route disponible : /static/<path:filename>
+2025-02-20 09:28:54,404 - Route disponible : /preview/<path:filename>
+2025-02-20 09:28:54,404 - Route disponible : /view/<int:id>
+2025-02-20 09:28:54,405 - Route disponible : /
+2025-02-20 09:28:54,405 - Route disponible : /login
+2025-02-20 09:28:54,405 - Route disponible : /logout
+2025-02-20 09:28:54,405 - Route disponible : /delete/<int:id>
+2025-02-20 09:28:54,405 - Route disponible : /edit/<int:id>
+2025-02-20 09:28:54,405 - Route disponible : /add
+2025-02-20 09:28:54,405 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 09:28:54,405 - Route disponible : /open_file/<path:file_path>
+2025-02-20 09:28:54,405 - Route disponible : /upload_image
+2025-02-20 09:28:54,405 - Route disponible : /serve_image/<path:filename>
+2025-02-20 09:28:54,405 - Route disponible : /configuration
+2025-02-20 09:28:54,405 - Route disponible : /update_application/<int:app_id>
+2025-02-20 09:28:54,405 - Route disponible : /add_user
+2025-02-20 09:28:54,405 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 09:28:54,405 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 09:28:54,405 - Route disponible : /add_service
+2025-02-20 09:28:54,406 - Route disponible : /update_service/<int:service_id>
+2025-02-20 09:28:54,406 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 09:28:54,406 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 09:28:54,406 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 09:28:54,406 - Route disponible : /soft_delete/<int:id>
+2025-02-20 09:28:54,406 - Route disponible : /gestion_a_verifier
+2025-02-20 09:28:54,406 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 09:28:54,406 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 09:28:54,406 - Route disponible : /deleted_procedures
+2025-02-20 09:28:54,406 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 09:28:54,434 -  * Debugger is active!
+2025-02-20 09:28:54,440 -  * Debugger PIN: 839-106-180
+2025-02-20 09:28:56,882 - 127.0.0.1 - - [20/Feb/2025 09:28:56] "GET /view/9 HTTP/1.1" 200 -
+2025-02-20 09:28:57,273 - 127.0.0.1 - - [20/Feb/2025 09:28:57] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-02-20 09:29:07,651 - 127.0.0.1 - - [20/Feb/2025 09:29:07] "GET / HTTP/1.1" 200 -
+2025-02-20 10:31:15,987 - Route disponible: /static/<path:filename>
+2025-02-20 10:31:15,988 - Route disponible: /preview/<path:filename>
+2025-02-20 10:31:15,988 - Route disponible: /view/<int:id>
+2025-02-20 10:31:15,988 - Route disponible: /
+2025-02-20 10:31:15,988 - Route disponible: /login
+2025-02-20 10:31:15,988 - Route disponible: /logout
+2025-02-20 10:31:15,988 - Route disponible: /delete/<int:id>
+2025-02-20 10:31:15,988 - Route disponible: /edit/<int:id>
+2025-02-20 10:31:15,988 - Route disponible: /add
+2025-02-20 10:31:15,988 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 10:31:15,988 - Route disponible: /open_file/<path:file_path>
+2025-02-20 10:31:15,988 - Route disponible: /upload_image
+2025-02-20 10:31:15,988 - Route disponible: /serve_image/<path:filename>
+2025-02-20 10:31:15,989 - Route disponible: /configuration
+2025-02-20 10:31:15,989 - Route disponible: /update_application/<int:app_id>
+2025-02-20 10:31:15,989 - Route disponible: /add_user
+2025-02-20 10:31:15,989 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 10:31:15,989 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 10:31:15,989 - Route disponible: /add_service
+2025-02-20 10:31:15,989 - Route disponible: /update_service/<int:service_id>
+2025-02-20 10:31:15,989 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 10:31:15,989 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 10:31:15,989 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 10:31:15,989 - Route disponible: /soft_delete/<int:id>
+2025-02-20 10:31:15,992 - Route disponible : /static/<path:filename>
+2025-02-20 10:31:15,992 - Route disponible : /preview/<path:filename>
+2025-02-20 10:31:15,992 - Route disponible : /view/<int:id>
+2025-02-20 10:31:15,992 - Route disponible : /
+2025-02-20 10:31:15,992 - Route disponible : /login
+2025-02-20 10:31:15,992 - Route disponible : /logout
+2025-02-20 10:31:15,992 - Route disponible : /delete/<int:id>
+2025-02-20 10:31:15,992 - Route disponible : /edit/<int:id>
+2025-02-20 10:31:15,992 - Route disponible : /add
+2025-02-20 10:31:15,992 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 10:31:15,992 - Route disponible : /open_file/<path:file_path>
+2025-02-20 10:31:15,992 - Route disponible : /upload_image
+2025-02-20 10:31:15,992 - Route disponible : /serve_image/<path:filename>
+2025-02-20 10:31:15,992 - Route disponible : /configuration
+2025-02-20 10:31:15,993 - Route disponible : /update_application/<int:app_id>
+2025-02-20 10:31:15,993 - Route disponible : /add_user
+2025-02-20 10:31:15,993 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 10:31:15,993 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 10:31:15,993 - Route disponible : /add_service
+2025-02-20 10:31:15,993 - Route disponible : /update_service/<int:service_id>
+2025-02-20 10:31:15,993 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 10:31:15,993 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 10:31:15,993 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 10:31:15,993 - Route disponible : /soft_delete/<int:id>
+2025-02-20 10:31:15,993 - Route disponible : /gestion_a_verifier
+2025-02-20 10:31:15,993 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 10:31:15,993 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 10:31:15,993 - Route disponible : /deleted_procedures
+2025-02-20 10:31:15,993 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 10:31:16,058 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.110.114:8080
+2025-02-20 10:31:16,059 - [33mPress CTRL+C to quit[0m
+2025-02-20 10:31:16,064 -  * Restarting with stat
+2025-02-20 10:31:16,560 - Route disponible: /static/<path:filename>
+2025-02-20 10:31:16,560 - Route disponible: /preview/<path:filename>
+2025-02-20 10:31:16,560 - Route disponible: /view/<int:id>
+2025-02-20 10:31:16,560 - Route disponible: /
+2025-02-20 10:31:16,560 - Route disponible: /login
+2025-02-20 10:31:16,560 - Route disponible: /logout
+2025-02-20 10:31:16,560 - Route disponible: /delete/<int:id>
+2025-02-20 10:31:16,561 - Route disponible: /edit/<int:id>
+2025-02-20 10:31:16,561 - Route disponible: /add
+2025-02-20 10:31:16,561 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 10:31:16,561 - Route disponible: /open_file/<path:file_path>
+2025-02-20 10:31:16,561 - Route disponible: /upload_image
+2025-02-20 10:31:16,561 - Route disponible: /serve_image/<path:filename>
+2025-02-20 10:31:16,561 - Route disponible: /configuration
+2025-02-20 10:31:16,561 - Route disponible: /update_application/<int:app_id>
+2025-02-20 10:31:16,561 - Route disponible: /add_user
+2025-02-20 10:31:16,561 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 10:31:16,561 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 10:31:16,561 - Route disponible: /add_service
+2025-02-20 10:31:16,561 - Route disponible: /update_service/<int:service_id>
+2025-02-20 10:31:16,561 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 10:31:16,561 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 10:31:16,561 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 10:31:16,562 - Route disponible: /soft_delete/<int:id>
+2025-02-20 10:31:16,564 - Route disponible : /static/<path:filename>
+2025-02-20 10:31:16,564 - Route disponible : /preview/<path:filename>
+2025-02-20 10:31:16,564 - Route disponible : /view/<int:id>
+2025-02-20 10:31:16,564 - Route disponible : /
+2025-02-20 10:31:16,564 - Route disponible : /login
+2025-02-20 10:31:16,565 - Route disponible : /logout
+2025-02-20 10:31:16,565 - Route disponible : /delete/<int:id>
+2025-02-20 10:31:16,565 - Route disponible : /edit/<int:id>
+2025-02-20 10:31:16,565 - Route disponible : /add
+2025-02-20 10:31:16,565 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 10:31:16,565 - Route disponible : /open_file/<path:file_path>
+2025-02-20 10:31:16,565 - Route disponible : /upload_image
+2025-02-20 10:31:16,565 - Route disponible : /serve_image/<path:filename>
+2025-02-20 10:31:16,565 - Route disponible : /configuration
+2025-02-20 10:31:16,565 - Route disponible : /update_application/<int:app_id>
+2025-02-20 10:31:16,565 - Route disponible : /add_user
+2025-02-20 10:31:16,565 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 10:31:16,565 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 10:31:16,565 - Route disponible : /add_service
+2025-02-20 10:31:16,565 - Route disponible : /update_service/<int:service_id>
+2025-02-20 10:31:16,565 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 10:31:16,566 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 10:31:16,566 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 10:31:16,566 - Route disponible : /soft_delete/<int:id>
+2025-02-20 10:31:16,566 - Route disponible : /gestion_a_verifier
+2025-02-20 10:31:16,566 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 10:31:16,566 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 10:31:16,566 - Route disponible : /deleted_procedures
+2025-02-20 10:31:16,566 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 10:31:16,592 -  * Debugger is active!
+2025-02-20 10:31:16,601 -  * Debugger PIN: 839-106-180
+2025-02-20 10:31:31,023 - 127.0.0.1 - - [20/Feb/2025 10:31:31] "[32mGET / HTTP/1.1[0m" 302 -
+2025-02-20 10:31:31,376 - 127.0.0.1 - - [20/Feb/2025 10:31:31] "GET /login HTTP/1.1" 200 -
+2025-02-20 10:31:33,467 - 127.0.0.1 - - [20/Feb/2025 10:31:33] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-20 10:33:27,832 - 127.0.0.1 - - [20/Feb/2025 10:33:27] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-02-20 10:33:28,480 - 127.0.0.1 - - [20/Feb/2025 10:33:28] "GET / HTTP/1.1" 200 -
+2025-02-20 10:33:39,193 - 127.0.0.1 - - [20/Feb/2025 10:33:39] "GET / HTTP/1.1" 200 -
+2025-02-20 10:33:41,234 - 127.0.0.1 - - [20/Feb/2025 10:33:41] "GET /configuration HTTP/1.1" 200 -
+2025-02-20 10:34:08,054 - 127.0.0.1 - - [20/Feb/2025 10:34:08] "GET /deleted_procedures HTTP/1.1" 200 -
+2025-02-20 10:34:14,550 - 127.0.0.1 - - [20/Feb/2025 10:34:14] "GET /configuration HTTP/1.1" 200 -
+2025-02-20 10:34:16,875 - 127.0.0.1 - - [20/Feb/2025 10:34:16] "GET / HTTP/1.1" 200 -
+2025-02-20 10:34:27,572 - 127.0.0.1 - - [20/Feb/2025 10:34:27] "GET / HTTP/1.1" 200 -
+2025-02-20 10:34:35,432 - DEBUG - La route /gestion_a_verifier a été appelée
+2025-02-20 10:34:35,667 - DEBUG - Procedures récupérées (1 lignes): ((19, 'resultat trompette', 'edfgdsfsdfdsqfdfdfd\r\nfgfgfdgsdf\r\ngfsdgsdfgdsf\r\ngdsfgdsf\r\ngdsfgdsfgfds', '#Trompette', 'Ici normalement : ref tck', 'RESEBLOC, SI ONCO, LEA, SI SCAN, SIP ACTES', '#3f5c94, #8c4c59, #5F8347, #7C2DB3, #6ABF1D', 'À valider', 'Paul'),)
+2025-02-20 10:34:35,680 - 127.0.0.1 - - [20/Feb/2025 10:34:35] "GET /gestion_a_verifier HTTP/1.1" 200 -
+2025-02-20 10:34:59,536 - 127.0.0.1 - - [20/Feb/2025 10:34:59] "GET / HTTP/1.1" 200 -
+2025-02-20 10:35:10,255 - 127.0.0.1 - - [20/Feb/2025 10:35:10] "GET / HTTP/1.1" 200 -
+2025-02-20 10:35:20,235 - 127.0.0.1 - - [20/Feb/2025 10:35:20] "GET / HTTP/1.1" 200 -
+2025-02-20 10:35:23,953 - 127.0.0.1 - - [20/Feb/2025 10:35:23] "GET /add HTTP/1.1" 200 -
+2025-02-20 10:36:14,303 - 127.0.0.1 - - [20/Feb/2025 10:36:14] "[32mPOST /add HTTP/1.1[0m" 302 -
+2025-02-20 10:36:14,939 - 127.0.0.1 - - [20/Feb/2025 10:36:14] "GET / HTTP/1.1" 200 -
+2025-02-20 10:36:25,637 - 127.0.0.1 - - [20/Feb/2025 10:36:25] "GET / HTTP/1.1" 200 -
+2025-02-20 10:36:35,638 - 127.0.0.1 - - [20/Feb/2025 10:36:35] "GET / HTTP/1.1" 200 -
+2025-02-20 10:36:43,569 - 127.0.0.1 - - [20/Feb/2025 10:36:43] "[32mPOST /reject_procedure/23 HTTP/1.1[0m" 302 -
+2025-02-20 10:36:44,227 - 127.0.0.1 - - [20/Feb/2025 10:36:44] "GET / HTTP/1.1" 200 -
+2025-02-20 10:36:51,699 - 127.0.0.1 - - [20/Feb/2025 10:36:51] "GET /edit/23 HTTP/1.1" 200 -
+2025-02-20 10:36:52,115 - 127.0.0.1 - - [20/Feb/2025 10:36:52] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-02-20 10:37:00,530 - 127.0.0.1 - - [20/Feb/2025 10:37:00] "[32mPOST /edit/23 HTTP/1.1[0m" 302 -
+2025-02-20 10:37:01,145 - 127.0.0.1 - - [20/Feb/2025 10:37:01] "GET / HTTP/1.1" 200 -
+2025-02-20 10:37:05,676 - 127.0.0.1 - - [20/Feb/2025 10:37:05] "[32mPOST /validate_procedure/23 HTTP/1.1[0m" 302 -
+2025-02-20 10:37:06,346 - 127.0.0.1 - - [20/Feb/2025 10:37:06] "GET / HTTP/1.1" 200 -
+2025-02-20 10:37:17,036 - 127.0.0.1 - - [20/Feb/2025 10:37:17] "GET / HTTP/1.1" 200 -
+2025-02-20 10:37:27,021 - 127.0.0.1 - - [20/Feb/2025 10:37:27] "GET / HTTP/1.1" 200 -
+2025-02-20 10:37:37,036 - 127.0.0.1 - - [20/Feb/2025 10:37:37] "GET / HTTP/1.1" 200 -
+2025-02-20 10:37:47,024 - 127.0.0.1 - - [20/Feb/2025 10:37:47] "GET / HTTP/1.1" 200 -
+2025-02-20 10:37:57,030 - 127.0.0.1 - - [20/Feb/2025 10:37:57] "GET / HTTP/1.1" 200 -
+2025-02-20 10:38:07,036 - 127.0.0.1 - - [20/Feb/2025 10:38:07] "GET / HTTP/1.1" 200 -
+2025-02-20 10:38:17,038 - 127.0.0.1 - - [20/Feb/2025 10:38:17] "GET / HTTP/1.1" 200 -
+2025-02-20 10:38:27,037 - 127.0.0.1 - - [20/Feb/2025 10:38:27] "GET / HTTP/1.1" 200 -
+2025-02-20 10:38:37,029 - 127.0.0.1 - - [20/Feb/2025 10:38:37] "GET / HTTP/1.1" 200 -
+2025-02-20 10:38:47,030 - 127.0.0.1 - - [20/Feb/2025 10:38:47] "GET / HTTP/1.1" 200 -
+2025-02-20 10:38:57,025 - 127.0.0.1 - - [20/Feb/2025 10:38:57] "GET / HTTP/1.1" 200 -
+2025-02-20 10:38:58,884 - 127.0.0.1 - - [20/Feb/2025 10:38:58] "[32mPOST /reject_procedure/19 HTTP/1.1[0m" 302 -
+2025-02-20 10:38:59,515 - 127.0.0.1 - - [20/Feb/2025 10:38:59] "GET / HTTP/1.1" 200 -
+2025-02-20 10:39:10,206 - 127.0.0.1 - - [20/Feb/2025 10:39:10] "GET / HTTP/1.1" 200 -
+2025-02-20 10:39:15,857 - 127.0.0.1 - - [20/Feb/2025 10:39:15] "GET /view/9 HTTP/1.1" 200 -
+2025-02-20 10:39:16,163 - 127.0.0.1 - - [20/Feb/2025 10:39:16] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-02-20 10:42:04,243 - 127.0.0.1 - - [20/Feb/2025 10:42:04] "GET / HTTP/1.1" 200 -
+2025-02-20 10:42:08,533 - 127.0.0.1 - - [20/Feb/2025 10:42:08] "GET /view/16 HTTP/1.1" 200 -
+2025-02-20 10:42:08,843 - 127.0.0.1 - - [20/Feb/2025 10:42:08] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-02-20 10:42:11,956 - 127.0.0.1 - - [20/Feb/2025 10:42:11] "GET / HTTP/1.1" 200 -
+2025-02-20 10:42:15,242 - 127.0.0.1 - - [20/Feb/2025 10:42:15] "GET /view/18 HTTP/1.1" 200 -
+2025-02-20 10:42:15,538 - 127.0.0.1 - - [20/Feb/2025 10:42:15] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-02-20 10:42:18,728 - 127.0.0.1 - - [20/Feb/2025 10:42:18] "GET / HTTP/1.1" 200 -
+2025-02-20 10:42:23,104 - 127.0.0.1 - - [20/Feb/2025 10:42:23] "GET /edit/18 HTTP/1.1" 200 -
+2025-02-20 10:42:23,438 - 127.0.0.1 - - [20/Feb/2025 10:42:23] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-02-20 10:42:32,300 - 127.0.0.1 - - [20/Feb/2025 10:42:32] "[32mPOST /edit/18 HTTP/1.1[0m" 302 -
+2025-02-20 10:42:32,912 - 127.0.0.1 - - [20/Feb/2025 10:42:32] "GET / HTTP/1.1" 200 -
+2025-02-20 10:42:43,619 - 127.0.0.1 - - [20/Feb/2025 10:42:43] "GET / HTTP/1.1" 200 -
+2025-02-20 10:42:53,620 - 127.0.0.1 - - [20/Feb/2025 10:42:53] "GET / HTTP/1.1" 200 -
+2025-02-20 11:05:07,419 - Route disponible: /static/<path:filename>
+2025-02-20 11:05:07,419 - Route disponible: /preview/<path:filename>
+2025-02-20 11:05:07,419 - Route disponible: /view/<int:id>
+2025-02-20 11:05:07,419 - Route disponible: /
+2025-02-20 11:05:07,419 - Route disponible: /login
+2025-02-20 11:05:07,419 - Route disponible: /logout
+2025-02-20 11:05:07,420 - Route disponible: /delete/<int:id>
+2025-02-20 11:05:07,420 - Route disponible: /edit/<int:id>
+2025-02-20 11:05:07,420 - Route disponible: /add
+2025-02-20 11:05:07,420 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 11:05:07,420 - Route disponible: /open_file/<path:file_path>
+2025-02-20 11:05:07,420 - Route disponible: /upload_image
+2025-02-20 11:05:07,420 - Route disponible: /serve_image/<path:filename>
+2025-02-20 11:05:07,420 - Route disponible: /configuration
+2025-02-20 11:05:07,420 - Route disponible: /update_application/<int:app_id>
+2025-02-20 11:05:07,420 - Route disponible: /add_user
+2025-02-20 11:05:07,420 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 11:05:07,420 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 11:05:07,420 - Route disponible: /add_service
+2025-02-20 11:05:07,420 - Route disponible: /update_service/<int:service_id>
+2025-02-20 11:05:07,421 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 11:05:07,421 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 11:05:07,421 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 11:05:07,421 - Route disponible: /soft_delete/<int:id>
+2025-02-20 11:05:07,428 - Route disponible : /static/<path:filename>
+2025-02-20 11:05:07,429 - Route disponible : /preview/<path:filename>
+2025-02-20 11:05:07,429 - Route disponible : /view/<int:id>
+2025-02-20 11:05:07,430 - Route disponible : /
+2025-02-20 11:05:07,430 - Route disponible : /login
+2025-02-20 11:05:07,430 - Route disponible : /logout
+2025-02-20 11:05:07,430 - Route disponible : /delete/<int:id>
+2025-02-20 11:05:07,430 - Route disponible : /edit/<int:id>
+2025-02-20 11:05:07,430 - Route disponible : /add
+2025-02-20 11:05:07,430 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 11:05:07,430 - Route disponible : /open_file/<path:file_path>
+2025-02-20 11:05:07,430 - Route disponible : /upload_image
+2025-02-20 11:05:07,430 - Route disponible : /serve_image/<path:filename>
+2025-02-20 11:05:07,431 - Route disponible : /configuration
+2025-02-20 11:05:07,431 - Route disponible : /update_application/<int:app_id>
+2025-02-20 11:05:07,432 - Route disponible : /add_user
+2025-02-20 11:05:07,432 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 11:05:07,432 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 11:05:07,433 - Route disponible : /add_service
+2025-02-20 11:05:07,433 - Route disponible : /update_service/<int:service_id>
+2025-02-20 11:05:07,433 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 11:05:07,433 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 11:05:07,433 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 11:05:07,433 - Route disponible : /soft_delete/<int:id>
+2025-02-20 11:05:07,433 - Route disponible : /gestion_a_verifier
+2025-02-20 11:05:07,433 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 11:05:07,433 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 11:05:07,433 - Route disponible : /deleted_procedures
+2025-02-20 11:05:07,433 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 11:05:07,518 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.110.114:8080
+2025-02-20 11:05:07,518 - [33mPress CTRL+C to quit[0m
+2025-02-20 11:05:07,523 -  * Restarting with stat
+2025-02-20 11:05:08,187 - Route disponible: /static/<path:filename>
+2025-02-20 11:05:08,187 - Route disponible: /preview/<path:filename>
+2025-02-20 11:05:08,187 - Route disponible: /view/<int:id>
+2025-02-20 11:05:08,187 - Route disponible: /
+2025-02-20 11:05:08,187 - Route disponible: /login
+2025-02-20 11:05:08,187 - Route disponible: /logout
+2025-02-20 11:05:08,187 - Route disponible: /delete/<int:id>
+2025-02-20 11:05:08,187 - Route disponible: /edit/<int:id>
+2025-02-20 11:05:08,187 - Route disponible: /add
+2025-02-20 11:05:08,187 - Route disponible: /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 11:05:08,188 - Route disponible: /open_file/<path:file_path>
+2025-02-20 11:05:08,188 - Route disponible: /upload_image
+2025-02-20 11:05:08,188 - Route disponible: /serve_image/<path:filename>
+2025-02-20 11:05:08,188 - Route disponible: /configuration
+2025-02-20 11:05:08,188 - Route disponible: /update_application/<int:app_id>
+2025-02-20 11:05:08,188 - Route disponible: /add_user
+2025-02-20 11:05:08,188 - Route disponible: /update_user_service/<int:user_id>
+2025-02-20 11:05:08,188 - Route disponible: /delete_user/<int:user_id>
+2025-02-20 11:05:08,188 - Route disponible: /add_service
+2025-02-20 11:05:08,188 - Route disponible: /update_service/<int:service_id>
+2025-02-20 11:05:08,188 - Route disponible: /delete_service/<int:service_id>
+2025-02-20 11:05:08,188 - Route disponible: /update_user_admin/<int:user_id>
+2025-02-20 11:05:08,188 - Route disponible: /validate_procedure/<int:id>
+2025-02-20 11:05:08,188 - Route disponible: /soft_delete/<int:id>
+2025-02-20 11:05:08,191 - Route disponible : /static/<path:filename>
+2025-02-20 11:05:08,191 - Route disponible : /preview/<path:filename>
+2025-02-20 11:05:08,191 - Route disponible : /view/<int:id>
+2025-02-20 11:05:08,191 - Route disponible : /
+2025-02-20 11:05:08,191 - Route disponible : /login
+2025-02-20 11:05:08,192 - Route disponible : /logout
+2025-02-20 11:05:08,192 - Route disponible : /delete/<int:id>
+2025-02-20 11:05:08,192 - Route disponible : /edit/<int:id>
+2025-02-20 11:05:08,192 - Route disponible : /add
+2025-02-20 11:05:08,192 - Route disponible : /home/devlog/FichiersWiki/<path:filename>
+2025-02-20 11:05:08,192 - Route disponible : /open_file/<path:file_path>
+2025-02-20 11:05:08,192 - Route disponible : /upload_image
+2025-02-20 11:05:08,192 - Route disponible : /serve_image/<path:filename>
+2025-02-20 11:05:08,192 - Route disponible : /configuration
+2025-02-20 11:05:08,193 - Route disponible : /update_application/<int:app_id>
+2025-02-20 11:05:08,193 - Route disponible : /add_user
+2025-02-20 11:05:08,193 - Route disponible : /update_user_service/<int:user_id>
+2025-02-20 11:05:08,193 - Route disponible : /delete_user/<int:user_id>
+2025-02-20 11:05:08,193 - Route disponible : /add_service
+2025-02-20 11:05:08,193 - Route disponible : /update_service/<int:service_id>
+2025-02-20 11:05:08,193 - Route disponible : /delete_service/<int:service_id>
+2025-02-20 11:05:08,193 - Route disponible : /update_user_admin/<int:user_id>
+2025-02-20 11:05:08,193 - Route disponible : /validate_procedure/<int:id>
+2025-02-20 11:05:08,193 - Route disponible : /soft_delete/<int:id>
+2025-02-20 11:05:08,193 - Route disponible : /gestion_a_verifier
+2025-02-20 11:05:08,194 - Route disponible : /reject_procedure/<int:id>
+2025-02-20 11:05:08,194 - Route disponible : /correct_procedure/<int:id>
+2025-02-20 11:05:08,194 - Route disponible : /deleted_procedures
+2025-02-20 11:05:08,194 - Route disponible : /gestion_procedures_a_valider
+2025-02-20 11:05:08,223 -  * Debugger is active!
+2025-02-20 11:05:08,232 -  * Debugger PIN: 839-106-180
+2025-02-20 11:05:14,759 - 127.0.0.1 - - [20/Feb/2025 11:05:14] "[32mGET / HTTP/1.1[0m" 302 -
+2025-02-20 11:05:15,062 - 127.0.0.1 - - [20/Feb/2025 11:05:15] "GET /login HTTP/1.1" 200 -
+2025-02-20 11:05:16,725 - 127.0.0.1 - - [20/Feb/2025 11:05:16] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-20 11:05:17,607 - 127.0.0.1 - - [20/Feb/2025 11:05:17] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-02-20 11:05:18,505 - 127.0.0.1 - - [20/Feb/2025 11:05:18] "GET / HTTP/1.1" 200 -
+2025-02-20 11:05:21,560 - 127.0.0.1 - - [20/Feb/2025 11:05:21] "GET /add HTTP/1.1" 200 -
+2025-02-20 15:40:40,167 - 127.0.0.1 - - [20/Feb/2025 15:40:40] "[33mGET /oauth/redirect?error=invalid_request&error_description=The%20provided%20redirect%20uri%20doesn't%20match%20any%20of%20the%20stored%20uris%20for%20this%20client.&state=zkvJHr-0QnP2bpCkbF1I4l7vQ-iuQ4fN_A3K95YpGm9i6IUuUVOTXCXqPvfVp8yJPo9B3w00enaO-FWPl2A4sOOY0EEgMHO3prZtMFuHdNOazZZi9R8Jqxw8rm5waFeu HTTP/1.1[0m" 404 -
+2025-02-20 15:40:41,907 - 127.0.0.1 - - [20/Feb/2025 15:40:41] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-02-20 15:41:06,063 - 127.0.0.1 - - [20/Feb/2025 15:41:06] "[33mGET /oauth/redirect?error=invalid_scope&error_description=Requested%20scopes%20are%20not%20allowed%20for%20this%20client.&state=THOreamjxjdfe6Mi8ZFcTn7_9i5fMbn3rBb9fFfZVoaIURdTjrzA7Q_ChtIH05hHKtWD_USOw3VkG7b3uKl-2PyLzT8VPex_VzJEopv-NsE-tg9EZUNMwEYDt-fv-bqe HTTP/1.1[0m" 404 -
