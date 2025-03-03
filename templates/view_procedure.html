@@ -4,57 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Affichage de la Procédure</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 
-<div class="container mt-5" style="border: 5px solid {{ procedure[12].split(',')[0] if procedure[12] else '#ccc' }}; padding: 20px; border-radius: 10px;">
-    <h1 class="text-center mb-4">{{ procedure[1] }}</h1>
+<div class="container mt-5" style="border: 5px solid {{ procedure['couleurs'].split(',')[0] if procedure['couleurs'] else '#ccc' }}; padding: 20px; border-radius: 10px;">
+    <h1 class="text-center mb-4">{{ procedure["titre"] }}</h1>
 
     <div class="mb-3">
         <h5>Mots-clés :</h5>
-        <p>{{ procedure[2] }}</p>
+        <p>{{ procedure["mots_cles"] }}</p>
     </div>
 
     <div class="mb-3">
         <h5>Description :</h5>
-        <td class="markdown-content">{{ procedure[2] | convertir_markdown }}</td>  <!-- ✅ Description -->
+        <div class="markdown-content">{{ procedure["description"] | convertir_markdown }}</div>
     </div>
 
     <div class="mb-3">
         <h5>Base de Données Impactée :</h5>
-        <p>{{ procedure[4] if procedure[4] else 'Aucune base impactée' }}</p>
+        <p>{{ procedure["base_donnees"] if procedure["base_donnees"] else 'Aucune base impactée' }}</p>
     </div>
 
     <div class="mb-3">
         <h5>Protocole de Résolution :</h5>
-        <td class="markdown-content">{{ procedure[5] | convertir_markdown }}</td>  <!-- ✅ Protocole de Résolution -->
+        <div class="markdown-content">{{ procedure["protocole_resolution"] | convertir_markdown }}</div>
     </div>
 
     <div class="mb-3">
         <h5>Protocole de Vérification :</h5>
-        <td class="markdown-content">{{ procedure[6] | convertir_markdown }}</td>  <!-- ✅ Protocole de Vérification -->
+        <div class="markdown-content">{{ procedure["protocole_verification"] | convertir_markdown }}</div>
     </div>
 
     <div class="mb-3">
         <h5>Acteur :</h5>
-        <p>{{ procedure[7] if procedure[7] else 'Non spécifié' }}</p>
+        <p>{{ procedure["acteur"] if procedure["acteur"] else 'Non spécifié' }}</p>
     </div>
 
     <div class="mb-3">
         <h5>Vérificateur :</h5>
-        <p>{{ procedure[8] if procedure[8] else 'Non spécifié' }}</p>
+        <p>{{ procedure["verificateur"] if procedure["verificateur"] else 'Non spécifié' }}</p>
     </div>
 
     <div class="mb-3">
         <h5>Utilisateur :</h5>
-        <p>{{ procedure[9] if procedure[9] else 'Non spécifié' }}</p>
+        <p>{{ procedure["utilisateur"] if procedure["utilisateur"] else 'Non spécifié' }}</p>
     </div>
 
     <div class="mb-3">
         <h5>Pièces Jointes :</h5>
-        {% if procedure[10] %}
-            <p><a href="{{ url_for('static', filename='uploads/' + procedure[10]) }}" target="_blank">{{ procedure[10] }}</a></p>
+        {% if procedure["pieces_jointes"] %}
+            {% set fichiers = procedure["pieces_jointes"].split(', ') %}
+            <ul>
+                {% for fichier in fichiers %}
+                    <li><a href="{{ url_for('static', filename='uploads/' + fichier) }}" target="_blank">{{ fichier }}</a></li>
+                {% endfor %}
+            </ul>
         {% else %}
             <p>Aucune pièce jointe</p>
         {% endif %}
@@ -63,12 +68,12 @@
     <div class="mb-3">
         <h5>Applications Impactées :</h5>
         <p>
-            {% if procedure[11] %}
-                {% set applications = procedure[11].split(', ') %}
-                {% set couleurs = procedure[12].split(', ') %}
+            {% if procedure["applications"] %}
+                {% set applications = procedure["applications"].split(', ') %}
+                {% set couleurs = procedure["couleurs"].split(', ') if procedure["couleurs"] else [] %}
                 {% for app in applications %}
                     <span class="application-badge"
-                          style="background-color: {{ couleurs[loop.index0] if couleurs|length > loop.index0 else '#cccccc' }};
+                          style="background-color: {{ couleurs[loop.index0] if loop.index0 < couleurs|length else '#cccccc' }};
                                  color: white;
                                  padding: 5px;
                                  border-radius: 5px;

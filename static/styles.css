@@ -1,0 +1,171 @@
+/* ? Styles Généraux */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* ? Conteneur Principal */
+.container {
+    max-width: 1200px; /* ? Augmenté pour une meilleure adaptation */
+    margin: auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ? Titres et Alignement */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 10px 0;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* ? Cartes */
+.procedure-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 900px;
+    margin: 10px auto;
+    border-radius: 12px;
+    box-shadow: 3px 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    background-color: #ffffff;
+    transition: transform 0.2s ease-in-out;
+    border-width: 2px;
+}
+
+.procedure-card:hover {
+    transform: translateY(-3px);
+}
+
+/* ? Barre d'interaction */
+.interaction-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-top: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.like-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* ? Boutons */
+.btn {
+    padding: 8px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-block;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: black;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-outline-success, .btn-outline-danger {
+    border-radius: 20px;
+    font-size: 14px;
+    padding: 3px 10px;
+}
+
+/* ? Applications Impactées */
+.application-badge {
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    font-size: 13px;
+    font-weight: bold;
+    margin: 2px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.application-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+/* ? Badges et Labels */
+.badge {
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 5px;
+}
+
+/* ? Ajustement des éléments Markdown */
+.markdown-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.markdown-content code {
+    background-color: #f4f4f4;
+    color: #d63384;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.markdown-content blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 10px;
+    color: #555;
+    font-style: italic;
+}
+
+.markdown-content ul, .markdown-content ol {
+    padding-left: 20px;
+}
+
+/* ? Ajustement de l'affichage pour éviter le débordement */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .filter-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+}
