@@ -4,55 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier la Procédure</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 
 <div class="container procedure-container mt-5"
      style="border-color: {{ applications_associees[0][2] if applications_associees else '#ccc' }};">
     <h1 class="text-center mb-4">Modifier la Procédure</h1>
-    <form method="POST" action="{{ url_for('edit_procedure', id=procedure[0]) }}">
+    <form method="POST" action="{{ url_for('edit_procedure', id=procedure["id"]) }}">
         <div class="mb-3">
             <label for="titre" class="form-label">Titre</label>
-            <input type="text" class="form-control" name="titre" id="titre" value="{{ procedure[1] }}" required>
+            <input type="text" class="form-control" name="titre" id="titre" value="{{ procedure["titre"] }}" required>
         </div>
 
         <div class="mb-3">
             <label for="mots_cles" class="form-label">Mots-clés (séparés par #)</label>
-            <input type="text" class="form-control" name="mots_cles" id="mots_cles" value="{{ procedure[2] }}">
+            <input type="text" class="form-control" name="mots_cles" id="mots_cles" value="{{ procedure["mots_cles"] }}">
         </div>
 
         <div class="mb-3">
             <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description">{{ procedure[3] }}</textarea>
+            <textarea class="form-control" id="description" name="description">{{ procedure["description"] }}</textarea>
         </div>
 
         <div class="mb-3">
             <label for="protocole_resolution" class="form-label">Protocole de Résolution</label>
-            <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure[6] }}</textarea>
+            <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure["protocole_resolution"] }}</textarea>
         </div>
 
         <div class="mb-3">
             <label for="protocole_verification" class="form-label">Protocole de Vérification</label>
-            <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure[7] }}</textarea>
+            <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure["protocole_verification"] }}</textarea>
         </div>
 
         <div class="mb-3">
             <label for="base_donnees" class="form-label">Base de Données Impactée</label>
-            <input type="text" class="form-control" id="base_donnees" name="base_donnees" value="{{ procedure[5] }}">
+            <input type="text" class="form-control" id="base_donnees" name="base_donnees" value="{{ procedure["base_donnees"] }}">
         </div>
         <div class="mb-3">
             <label for="reference_ticket" class="form-label">Référence Ticket</label>
-            <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure[4] }}">
+            <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure["reference_ticket"] }}">
         </div>
         <div class="mb-3">
             <label for="acteur" class="form-label">Acteur</label>
-            <input type="text" class="form-control" id="acteur" name="acteur" value="{{ procedure[8] }}">
+            <input type="text" class="form-control" id="acteur" name="acteur" value="{{ procedure["acteur"] }}">
         </div>
 
         <div class="mb-3">
             <label for="verificateur" class="form-label">Vérificateur</label>
-            <input type="text" class="form-control" id="verificateur" name="verificateur" value="{{ procedure[9] }}">
+            <input type="text" class="form-control" id="verificateur" name="verificateur" value="{{ procedure["verificateur"] }}">
         </div>
 
         <!-- ✅ Sélection des Applications -->

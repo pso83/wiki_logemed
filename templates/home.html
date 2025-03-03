@@ -24,53 +24,6 @@
                 <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger">Déconnexion</a>
             </div>
         </div>
-
-        <!-- ✅ Liste des procédures -->
-        <div class="row mt-3">
-            {% for procedure in procedures %}
-            <div class="col-lg-8 col-md-10 mx-auto mb-3"> <!-- ✅ Ajustement de la largeur des cartes -->
-                <div class="card procedure-card"
-                     style="border: 2px solid {{ procedure['couleurs'].split(',')[0] if procedure['couleurs'] else '#007bff' }};">
-                    <div class="card-header d-flex justify-content-between align-items-center procedure-title"
-                         style="background-color: {{ procedure['couleurs'].split(',')[0] if procedure['couleurs'] else '#007bff' }};">
-                        <h5 class="text-white m-0">{{ procedure['titre'] }}</h5>
-                        <span class="badge
-                            {% if procedure['statut'] == 'À valider' %} bg-danger
-                            {% elif procedure['statut'] == 'Validée' %} bg-success
-                            {% elif procedure['statut'] == 'À vérifier' %} bg-warning
-                            {% elif procedure['statut'] == 'Rejetée' %} bg-danger {% endif %}">
-                            {{ procedure['statut'] }}
-                        </span>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted">{{ procedure['description'] | convertir_markdown }}</p>
-
-                        <!-- ✅ Barre d'interaction -->
-                        <div class="d-flex justify-content-between align-items-center interaction-bar">
-                            <span class="text-muted">👀 {{ procedure['vues'] }} vues</span>
-                            <div class="d-flex align-items-center justify-content-center like-buttons">
-                                <form action="{{ url_for('like_procedure', id=procedure['id']) }}" method="post" class="me-2">
-                                    <button type="submit" class="btn btn-sm btn-outline-success">👍 {{ procedure['likes'] }}</button>
-                                </form>
-                                <form action="{{ url_for('dislike_procedure', id=procedure['id']) }}" method="post">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">👎 {{ procedure['dislikes'] }}</button>
-                                </form>
-                            </div>
-                            <div class="action-buttons d-flex align-items-center">
-                                <a href="{{ url_for('view_procedure', id=procedure.id) }}" class="btn btn-sm btn-primary me-2">Afficher</a>
-                                {% if session.get("username") == procedure['utilisateur'] %}
-                                    <a href="{{ url_for('edit_procedure', id=procedure.id) }}" class="btn btn-sm btn-warning me-2">Modifier</a>
-                                    <form method="POST" action="{{ url_for('soft_delete', id=procedure.id) }}" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
     </div>
     <!-- ✅ Notifications pour les procédures à valider et à corriger -->
     {% if procedures_a_valider > 0 and session.get("est_moderateur") %}
@@ -79,7 +32,6 @@
             <a href="{{ url_for('gestion_procedures_a_valider') }}" class="btn btn-sm btn-primary">Voir et valider</a>
         </div>
     {% endif %}
-
 
     {% if procedures_a_corriger > 0 %}
         <div class="alert alert-danger d-inline-block" style="max-width: 500px;" role="alert">
