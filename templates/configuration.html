@@ -136,7 +136,7 @@
                                         <select name="service" class="form-select">
                                             <option value="">Aucun</option>
                                             {% for service in services %}
-                                                <option value="{{ service['id'] }}" {% if user['service'] == service['utilisateur'] %}selected{% endif %}>{{ service['utilisateur'] }}</option>
+                                            <option value="{{ service['id'] }}" {% if service['nom'] == user['service'] %}selected{% endif %}>{{ service['nom'] }}</option>
                                             {% endfor %}
                                         </select>
                                         <button type="submit" class="btn btn-success mt-2">Modifier</button>
