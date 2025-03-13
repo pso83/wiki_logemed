@@ -3,13 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Applique le mode sombre au plus tôt
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    </script>
     <title>Gestion des Procédures à Valider / Vérifier</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme-toggle.css') }}">
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Procédures à Valider / Vérifier</h1>
+    {% include 'theme_toggle.html' %}
 
+    <div class="container mt-5">
+        <h2 class="page-title m-0">Procédures à Valider / Vérifier</h2>
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
@@ -26,15 +36,15 @@
             <tbody>
                 {% for procedure in procedures %}
                 <tr>
-                    <td>{{ procedure[1] }}</td>  <!-- ✅ Titre -->
-                    <td>{{ procedure[2] }}</td>  <!-- ✅ Description -->
-                    <td>{{ procedure[3] }}</td>  <!-- ✅ Mots-clés -->
-                    <td>{{ procedure[4] }}</td>  <!-- ✅ Ticket -->
+                    <td>{{ procedure['titre'] }}</td>  <!-- ✅ Titre -->
+                    <td>{{ procedure['description'] }}</td>  <!-- ✅ Description -->
+                    <td>{{ procedure['mots_cles'] }}</td>  <!-- ✅ Mots-clés -->
+                    <td>{{ procedure['reference_ticket'] }}</td>  <!-- ✅ Ticket -->
                     <td>
                         <div class="application-container">
-                            {% if procedure[5] and procedure[5] != '' %}
-                                {% set applications = procedure[5].split(', ') if procedure[5] is string else [] %}
-                                {% set couleurs = procedure[6].split(', ') if procedure[6] is string else [] %}
+                            {% if procedure['applications'] and procedure['applications'] != '' %}
+                                {% set applications = procedure['applications'].split(', ') if procedure['applications'] is string else [] %}
+                                {% set couleurs = procedure['couleurs'].split(', ') if procedure['couleurs'] is string else [] %}
                                 {% for app in applications %}
                                     <span class="application-badge"
                                           style="background-color: {{ couleurs[loop.index0] if couleurs|length > loop.index0 else '#cccccc' }};
@@ -53,14 +63,14 @@
                             {% endif %}
                         </div>
                     </td>
-                    <td><span class="badge bg-warning">{{ procedure[7] }}</span></td>  <!-- ✅ Statut -->
-                    <td>{{ procedure[8] }}</td>  <!-- ✅ Auteur -->
+                    <td><span class="badge bg-warning">{{ procedure['statut'] }}</span></td>  <!-- ✅ Statut -->
+                    <td>{{ procedure['utilisateur'] }}</td>  <!-- ✅ Auteur -->
                     <td>
-                        <a href="{{ url_for('view_procedure', id=procedure[0]) }}" class="btn btn-info btn-sm">Afficher</a>
-                        <form method="POST" action="{{ url_for('validate_procedure', id=procedure[0]) }}" style="display:inline;">
+                        <a href="{{ url_for('view_procedure', id=procedure['id']) }}" class="btn btn-info btn-sm">Afficher</a>
+                        <form method="POST" action="{{ url_for('validate_procedure', id=procedure['id']) }}" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Valider</button>
                         </form>
-                        <form method="POST" action="{{ url_for('reject_procedure', id=procedure[0]) }}" style="display:inline;">
+                        <form method="POST" action="{{ url_for('reject_procedure', id=procedure['id']) }}" style="display:inline;">
                             <button type="submit" class="btn btn-danger btn-sm">Rejeter</button>
                         </form>
                     </td>
@@ -72,5 +82,6 @@
             <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
         </div>
     </div>
+<script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

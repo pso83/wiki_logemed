@@ -3,10 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Applique le mode sombre au plus tôt
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    </script>
     <title>Configuration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme-toggle.css') }}">
 </head>
 <body class="bg-light">
+    {% include 'theme_toggle.html' %}
+
     <div class="container mt-5">
         <h1 class="text-center mb-4">Configuration</h1>
         <!-- ✅ Boutons bien positionnés sous le titre avec espacement correct -->
@@ -58,20 +69,20 @@
                         <tbody>
                             {% for app in applications %}
                             <tr>
-                                <td>{{ app[1] }}</td>
+                                <td>{{ app['nom'] }}</td>
                                 <td>
-                                    <input type="color" class="form-control form-control-color" id="color_{{ app[0] }}" value="{{ app[2] }}">
+                                    <input type="color" class="form-control form-control-color" id="color_{{ app['id'] }}" value="{{ app['couleur'] }}">
                                 </td>
                                 <td>
-                                    <form method="POST" action="{{ url_for('update_application', app_id=app[0]) }}">
-                                        <input type="hidden" name="new_color" id="hidden_color_{{ app[0] }}" value="{{ app[2] }}">
+                                    <form method="POST" action="{{ url_for('update_application', app_id=app['id']) }}">
+                                        <input type="hidden" name="new_color" id="hidden_color_{{ app['id'] }}" value="{{ app['couleur'] }}">
                                         <button type="submit" class="btn btn-warning">Mettre à jour</button>
                                     </form>
                                 </td>
                             </tr>
                             <script>
-                                document.getElementById("color_{{ app[0] }}").addEventListener("change", function() {
-                                    document.getElementById("hidden_color_{{ app[0] }}").value = this.value;
+                                document.getElementById("color_{{ app['id'] }}").addEventListener("change", function() {
+                                    document.getElementById("hidden_color_{{ app['id'] }}").value = this.value;
                                 });
                             </script>
                             {% endfor %}
@@ -98,7 +109,7 @@
                             <select class="form-select" id="service" name="service">
                                 <option value="">Sélectionner un service</option>
                                 {% for service in services %}
-                                    <option value="{{ service[0] }}">{{ service[1] }}</option>
+                                    <option value="{{ service['id'] }}">{{ service['nom'] }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -118,24 +129,24 @@
                         <tbody>
                             {% for user in users %}
                             <tr>
-                                <td>{{ user[1] }}</td>
-                                <td>{{ user[2] if user[2] else 'Non défini' }}</td>
+                                <td>{{ user['utilisateur'] }}</td>
+                                <td>{{ user['service'] if user['service'] else 'Non défini' }}</td>
                                 <td>
-                                    <form method="POST" action="{{ url_for('update_user_service', user_id=user[0]) }}">
+                                    <form method="POST" action="{{ url_for('update_user_service', user_id=user['id']) }}">
                                         <select name="service" class="form-select">
                                             <option value="">Aucun</option>
                                             {% for service in services %}
-                                                <option value="{{ service[0] }}" {% if user[2] == service[1] %}selected{% endif %}>{{ service[1] }}</option>
+                                                <option value="{{ service['id'] }}" {% if user['service'] == service['utilisateur'] %}selected{% endif %}>{{ service['utilisateur'] }}</option>
                                             {% endfor %}
                                         </select>
                                         <button type="submit" class="btn btn-success mt-2">Modifier</button>
                                     </form>
                                 </td>
                                 <td>
-                                    <form method="POST" action="{{ url_for('update_user_admin', user_id=user[0]) }}">
-                                        <input type="hidden" name="is_admin" value="{{ 'False' if user[3] else 'True' }}">
-                                        <button type="submit" class="btn btn-{{ 'danger' if user[3] else 'success' }}">
-                                            {{ 'Retirer Admin' if user[3] else 'Rendre Admin' }}
+                                    <form method="POST" action="{{ url_for('update_user_admin', user_id=user['id']) }}">
+                                        <input type="hidden" name="is_admin" value="{{ 'False' if user['est_admin'] else 'True' }}">
+                                        <button type="submit" class="btn btn-{{ 'danger' if user['est_admin'] else 'success' }}">
+                                            {{ 'Retirer Admin' if user['est_admin'] else 'Rendre Admin' }}
                                         </button>
                                     </form>
                                 </td>
@@ -171,13 +182,13 @@
                         {% for service in services %}
                         <tr>
                             <td>
-                                <form method="POST" action="{{ url_for('update_service', service_id=service[0]) }}">
-                                    <input type="text" name="new_name" class="form-control" value="{{ service[1] }}">
+                                <form method="POST" action="{{ url_for('update_service', service_id=service['id']) }}">
+                                    <input type="text" name="new_name" class="form-control" value="{{ service['nom'] }}">
                                     <button type="submit" class="btn btn-success mt-2">Modifier</button>
                                 </form>
                             </td>
                             <td>
-                                <form method="POST" action="{{ url_for('delete_service', service_id=service[0]) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+                                <form method="POST" action="{{ url_for('delete_service', service_id=service['id']) }}" onsubmit="return confirm('Confirmer la suppression ?');">
                                     <button type="submit" class="btn btn-danger">Supprimer</button>
                                 </form>
                             </td>
@@ -189,5 +200,6 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

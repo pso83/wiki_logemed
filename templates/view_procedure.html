@@ -3,99 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Applique le mode sombre au plus tôt
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    </script>
     <title>Affichage de la Procédure</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme-toggle.css') }}">
 </head>
-<body>
+<body class="bg-light">
+    {% include 'theme_toggle.html' %}
 
-<div class="container mt-5" style="border: 5px solid {{ procedure['couleurs'].split(',')[0] if procedure['couleurs'] else '#ccc' }}; padding: 20px; border-radius: 10px;">
-    <h1 class="text-center mb-4">{{ procedure["titre"] }}</h1>
+    <div class="container mt-5">
+        <div class="card shadow-lg p-4">
+            <h2 class="text-center mb-4">{{ procedure["titre"] }}</h2>
 
-    <div class="mb-3">
-        <h5>Mots-clés :</h5>
-        <p>{{ procedure["mots_cles"] }}</p>
+            <!-- Définition des couleurs -->
+            {% set couleurs = procedure["couleurs"].split(', ') if procedure["couleurs"] else ['#5D5D5D'] %}
+            {% set couleurs_count = couleurs | length %}
+
+            {% set section_index = 0 %}  <!-- Index pour alterner les couleurs -->
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Mots-clés</h5>
+                    <p>{{ procedure["mots_cles"] }}</p>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Description</h5>
+                    <div class="markdown-content">{{ procedure["description"] | convertir_markdown }}</div>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Base de Données Impactée</h5>
+                    <p>{{ procedure["base_donnees"] if procedure["base_donnees"] else 'Aucune base impactée' }}</p>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Résolution</h5>
+                    <div class="markdown-content">{{ procedure["protocole_resolution"] | convertir_markdown }}</div>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Vérification</h5>
+                    <div class="markdown-content">{{ procedure["protocole_verification"] | convertir_markdown }}</div>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Acteur</h5>
+                    <p>{{ procedure["acteur"] if procedure["acteur"] else 'Non spécifié' }}</p>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Vérificateur</h5>
+                    <p>{{ procedure["verificateur"] if procedure["verificateur"] else 'Non spécifié' }}</p>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Applications Impactées</h5>
+                    <p>
+                        {% if procedure["applications"] %}
+                            {% set applications = procedure["applications"].split(', ') %}
+                            {% for app in applications %}
+                                <span class="application-badge"
+                                      style="background-color: {{ couleurs[loop.index0 % couleurs_count] }};
+                                             color: white;
+                                             padding: 5px;
+                                             border-radius: 5px;
+                                             display: inline-block;
+                                             margin: 2px;">
+                                    {{ app }}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="application-badge bg-dark text-white p-2 rounded">
+                                Aucune application
+                            </span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="text-center">
+                <a href="{{ url_for('home') }}" class="btn btn-secondary">Retour</a>
+            </div>
+        </div>
     </div>
-
-    <div class="mb-3">
-        <h5>Description :</h5>
-        <div class="markdown-content">{{ procedure["description"] | convertir_markdown }}</div>
-    </div>
-
-    <div class="mb-3">
-        <h5>Base de Données Impactée :</h5>
-        <p>{{ procedure["base_donnees"] if procedure["base_donnees"] else 'Aucune base impactée' }}</p>
-    </div>
-
-    <div class="mb-3">
-        <h5>Protocole de Résolution :</h5>
-        <div class="markdown-content">{{ procedure["protocole_resolution"] | convertir_markdown }}</div>
-    </div>
-
-    <div class="mb-3">
-        <h5>Protocole de Vérification :</h5>
-        <div class="markdown-content">{{ procedure["protocole_verification"] | convertir_markdown }}</div>
-    </div>
-
-    <div class="mb-3">
-        <h5>Acteur :</h5>
-        <p>{{ procedure["acteur"] if procedure["acteur"] else 'Non spécifié' }}</p>
-    </div>
-
-    <div class="mb-3">
-        <h5>Vérificateur :</h5>
-        <p>{{ procedure["verificateur"] if procedure["verificateur"] else 'Non spécifié' }}</p>
-    </div>
-
-    <div class="mb-3">
-        <h5>Utilisateur :</h5>
-        <p>{{ procedure["utilisateur"] if procedure["utilisateur"] else 'Non spécifié' }}</p>
-    </div>
-
-    <div class="mb-3">
-        <h5>Pièces Jointes :</h5>
-        {% if procedure["pieces_jointes"] %}
-            {% set fichiers = procedure["pieces_jointes"].split(', ') %}
-            <ul>
-                {% for fichier in fichiers %}
-                    <li><a href="{{ url_for('static', filename='uploads/' + fichier) }}" target="_blank">{{ fichier }}</a></li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Aucune pièce jointe</p>
-        {% endif %}
-    </div>
-
-    <div class="mb-3">
-        <h5>Applications Impactées :</h5>
-        <p>
-            {% if procedure["applications"] %}
-                {% set applications = procedure["applications"].split(', ') %}
-                {% set couleurs = procedure["couleurs"].split(', ') if procedure["couleurs"] else [] %}
-                {% for app in applications %}
-                    <span class="application-badge"
-                          style="background-color: {{ couleurs[loop.index0] if loop.index0 < couleurs|length else '#cccccc' }};
-                                 color: white;
-                                 padding: 5px;
-                                 border-radius: 5px;
-                                 display: inline-block;
-                                 margin: 2px;">
-                        {{ app }}
-                    </span>
-                {% endfor %}
-            {% else %}
-                <span class="application-badge"
-                      style="background-color: black;
-                             color: white;
-                             padding: 5px;
-                             border-radius: 5px;">
-                    Aucune application
-                </span>
-            {% endif %}
-        </p>
-    </div>
-
-    <!-- ✅ Bouton Retour -->
-    <a href="{{ url_for('home') }}" class="btn btn-retour">Retour</a>
-</div>
+<script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

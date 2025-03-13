@@ -1,0 +1,177 @@
+/* 🌙 Fond général */
+.dark-mode body {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode {
+    background-color: #1a1a1a !important;
+}
+.dark-mode .page-title {
+    color: #ffffff !important;
+}
+.dark-mode .card,
+.dark-mode .form-control,
+.dark-mode .form-select,
+.dark-mode .alert {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border-color: #444;
+}
+.dark-mode .btn-primary,
+.dark-mode .btn-outline-primary,
+.dark-mode .btn-outline-success,
+.dark-mode .btn-outline-danger,
+.dark-mode .btn-outline-warning,
+.dark-mode .btn-secondary,
+.dark-mode .btn {
+    color: inherit;
+    background-color: inherit;
+    border-color: inherit;
+}
+.dark-mode .btn-primary,
+.dark-mode .btn-success,
+.dark-mode .btn-warning,
+.dark-mode .btn-danger {
+    filter: brightness(0.9);
+}
+.dark-mode .container,
+.dark-mode .header-bar,
+.dark-mode form,
+.dark-mode .alert-container {
+    background-color: #1a1a1a !important;
+}
+.dark-mode .btn-primary,
+.dark-mode .btn-success,
+.dark-mode .btn-warning,
+.dark-mode .btn-danger,
+.dark-mode .btn-secondary {
+    color: #fff;
+}
+.dark-mode .btn-outline-primary {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+.dark-mode .btn-outline-success {
+    background-color: #198754;
+    color: #fff;
+    border-color: #198754;
+}
+.dark-mode .btn-outline-warning {
+    background-color: #ffc107;
+    color: #fff;
+    border-color: #ffc107;
+}
+.dark-mode .btn-outline-danger {
+    background-color: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+}
+.dark-mode .btn-outline-secondary {
+    background-color: #6c757d;
+    color: #fff;
+    border-color: #adb5bd;
+}
+.dark-mode .btn-outline-primary:hover, .action-buttons .btn.btn-primary,
+.vote-button.active-like {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #adb5bd;
+}
+.dark-mode .btn-outline-success:hover,
+.vote-button.active-dislike {
+    background-color: #198754;
+    color: #000;
+    border-color: #adb5bd;
+}
+.dark-mode .btn-outline-warning:hover, .action-buttons .btn.btn-warning {
+    background-color: #ffc107;
+    color: white;
+    border-color: #adb5bd;
+}
+.dark-mode .btn-outline-danger:hover, .action-buttons .btn.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border-color: #adb5bd;
+}
+.dark-mode .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: #000;
+}
+.vote-button.active-like {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+.vote-button.active-dislike {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+.dark-mode .alert-warning {
+    background-color: #fff3cd !important;
+    color: #664d03 !important;
+}
+.dark-mode .alert-warning .btn {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+    border-color: #ffc107 !important;
+}
+.dark-mode .alert-danger {
+    background-color: #f8d7da !important;
+    color: #842029 !important;
+}
+.dark-mode .alert-danger .btn {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+    border-color: #dc3545 !important;
+}
+.dark-mode .interaction-bar span.text-muted {
+    color: #ffffff !important;
+}
+.dark-mode table.table thead,
+.dark-mode table.table th {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+}
+.dark-mode table.table
+ {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}
+.dark-mode table.table tbody tr,
+.dark-mode table.table td
+ {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}
+.dark-mode .application-badge {
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 2px;
+    font-size: 0.85rem;
+}
+/* Position fixe en haut à droite */
+#theme-toggle-container {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    z-index: 9999;
+}
+
+#toggle-theme-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: #000;
+    padding: 0.2em 0.4em;
+    transition: color 0.3s ease;
+}
+
+.dark-mode #toggle-theme-btn {
+    color: #fff;
+}

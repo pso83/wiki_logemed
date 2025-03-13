@@ -3,202 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Applique le mode sombre au plus tôt
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    </script>
     <title>Modifier la Procédure</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme-toggle.css') }}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll("textarea").forEach(textarea => {
+                textarea.style.height = textarea.scrollHeight + "px";
+                textarea.addEventListener("input", function() {
+                    this.style.height = "auto";
+                    this.style.height = (this.scrollHeight) + "px";
+                });
+            });
 
-<div class="container procedure-container mt-5"
-     style="border-color: {{ applications_associees[0][2] if applications_associees else '#ccc' }};">
-    <h1 class="text-center mb-4">Modifier la Procédure</h1>
-    <form method="POST" action="{{ url_for('edit_procedure', id=procedure["id"]) }}">
-        <div class="mb-3">
-            <label for="titre" class="form-label">Titre</label>
-            <input type="text" class="form-control" name="titre" id="titre" value="{{ procedure["titre"] }}" required>
-        </div>
+            const appSelect = document.getElementById("application_select");
+            const appListContainer = document.getElementById("app_list");
+            const couleurs = JSON.parse('{{ couleurs_dict|tojson|safe }}');
 
-        <div class="mb-3">
-            <label for="mots_cles" class="form-label">Mots-clés (séparés par #)</label>
-            <input type="text" class="form-control" name="mots_cles" id="mots_cles" value="{{ procedure["mots_cles"] }}">
-        </div>
+            document.getElementById("add_app_btn").addEventListener("click", function() {
+                const selectedOption = appSelect.options[appSelect.selectedIndex];
+                const appId = selectedOption.value;
+                const appName = selectedOption.text;
 
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description">{{ procedure["description"] }}</textarea>
-        </div>
+                if (!document.getElementById("app-wrapper-" + appId)) {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "d-flex align-items-center me-2 mb-2";
+                    wrapper.id = "app-wrapper-" + appId;
 
-        <div class="mb-3">
-            <label for="protocole_resolution" class="form-label">Protocole de Résolution</label>
-            <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure["protocole_resolution"] }}</textarea>
-        </div>
+                    const span = document.createElement("span");
+                    span.className = "badge p-2";
+                    span.style.backgroundColor = couleurs[appId] || "#5D5D5D";
+                    span.style.color = "white";
+                    span.textContent = appName;
 
-        <div class="mb-3">
-            <label for="protocole_verification" class="form-label">Protocole de Vérification</label>
-            <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure["protocole_verification"] }}</textarea>
-        </div>
+                    const closeBtn = document.createElement("button");
+                    closeBtn.className = "btn btn-sm btn-outline-danger ms-1";
+                    closeBtn.style.padding = "2px 6px";
+                    closeBtn.style.fontSize = "0.8rem";
+                    closeBtn.setAttribute("type", "button");
+                    closeBtn.innerText = "✖";
+                    closeBtn.onclick = () => removeApp(appId);
 
-        <div class="mb-3">
-            <label for="base_donnees" class="form-label">Base de Données Impactée</label>
-            <input type="text" class="form-control" id="base_donnees" name="base_donnees" value="{{ procedure["base_donnees"] }}">
-        </div>
-        <div class="mb-3">
-            <label for="reference_ticket" class="form-label">Référence Ticket</label>
-            <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure["reference_ticket"] }}">
-        </div>
-        <div class="mb-3">
-            <label for="acteur" class="form-label">Acteur</label>
-            <input type="text" class="form-control" id="acteur" name="acteur" value="{{ procedure["acteur"] }}">
-        </div>
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "application_id[]";
+                    input.value = appId;
+                    input.id = "input-app-" + appId;
 
-        <div class="mb-3">
-            <label for="verificateur" class="form-label">Vérificateur</label>
-            <input type="text" class="form-control" id="verificateur" name="verificateur" value="{{ procedure["verificateur"] }}">
-        </div>
+                    wrapper.appendChild(span);
+                    wrapper.appendChild(closeBtn);
+                    wrapper.appendChild(input);
 
-        <!-- ✅ Sélection des Applications -->
-        <div class="mb-3">
-            <label for="application_select" class="form-label">Sélectionner une Application</label>
-            <div class="input-group">
-                <select id="application_select" class="form-select">
-                    <option value="">-- Sélectionner --</option>
-                    {% for app in applications %}
-                        <option value="{{ app[0] }}" data-color="{{ app[2] }}">{{ app[1] }}</option>
-                    {% endfor %}
-                </select>
-                <button type="button" class="btn btn-primary" onclick="addApplication()">Ajouter</button>
-            </div>
-        </div>
-
-        <!-- ✅ Affichage des Applications Sélectionnées -->
-        <div class="mb-3">
-            <label class="form-label">Applications Impactées</label>
-            <div class="application-container" id="selected_applications_list">
-                {% for app in applications_associees %}
-                    <div class="application-item" data-app-id="{{ app[0] }}">
-                        <span class="application-badge"
-                              style="background-color: {{ app[2] }};
-                                     color: white;
-                                     padding: 5px;
-                                     border-radius: 5px;
-                                     display: inline-block;
-                                     margin-right: 8px;">
-                            {{ app[1] }}
-                        </span>
-                        <button type="button" class="btn btn-sm btn-danger btn-remove" onclick="removeApplication('{{ app[0] }}')">❌</button>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
-
-        <!-- ✅ Champ caché pour stocker les applications sélectionnées -->
-        <input type="hidden" name="application_id" id="application_id" value="{{ ','.join(selected_applications | map('string')) }}">
-
-        <!-- ✅ Champ caché pour stocker les applications sélectionnées -->
-        <input type="hidden" name="application_id" id="application_id" value="{{ ','.join(selected_applications | map('string')) }}">
-
-        <div class="mb-3 file-upload-container">
-            <label for="pieces_jointes" class="form-label">Ajouter des Pièces Jointes</label>
-            <input type="file" class="form-control" id="pieces_jointes" name="pieces_jointes" multiple>
-
-            {% if procedure[11] %}
-                <div class="file-preview">
-                    <h5 class="file-label">Fichiers Actuels :</h5>
-                    <ul class="file-list">
-                        {% for file in procedure[11].split(', ') %}
-                            <li><a href="{{ url_for('static', filename='uploads/' + file) }}" target="_blank">{{ file }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-        </div>
-        <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
-        <a href="{{ url_for('home') }}" class="btn btn-secondary btn-cancel">Annuler</a>
-        <a href="{{ url_for('home') }}" class="btn btn-retour">Retour</a>
-
-    </form>
-</div>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    let textareas = document.querySelectorAll("textarea");
-
-    textareas.forEach(textarea => {
-        textarea.style.height = textarea.scrollHeight + "px"; // Ajuster la hauteur dès le chargement
-
-        textarea.addEventListener("input", function() {
-            this.style.height = "auto"; // Réinitialiser la hauteur
-            this.style.height = (this.scrollHeight) + "px"; // Ajuster en fonction du contenu
+                    appListContainer.appendChild(wrapper);
+                }
+            });
         });
-    });
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    let hiddenField = document.getElementById("application_id");
-    let selectedList = document.getElementById("selected_applications_list");
-
-    window.addApplication = function() {
-        let select = document.getElementById("application_select");
-        let selectedAppId = select.value;
-        let selectedAppName = select.options[select.selectedIndex].text;
-        let selectedAppColor = select.options[select.selectedIndex].getAttribute("data-color") || "#cccccc"; // ✅ Récupérer la couleur
-
-        if (selectedAppId && !document.querySelector(`[data-app-id="${selectedAppId}"]`)) {
-            let listItem = document.createElement("div");
-            listItem.classList.add("application-item");
-            listItem.setAttribute("data-app-id", selectedAppId);
-            listItem.innerHTML = `
-                <span class="application-badge"
-                      style="background-color: ${selectedAppColor};
-                             color: white;
-                             padding: 5px;
-                             border-radius: 5px;
-                             display: inline-block;
-                             margin-right: 8px;">
-                    ${selectedAppName}
-                </span>
-                <button type="button" class="btn btn-sm btn-danger btn-remove" onclick="removeApplication('${selectedAppId}')">❌</button>
-            `;
-            selectedList.appendChild(listItem);
-
-            let apps = hiddenField.value ? hiddenField.value.split(",") : [];
-            apps.push(selectedAppId);
-            hiddenField.value = apps.join(",");
+    </script>
+    <script>
+        function removeApp(appId) {
+            const wrapper = document.getElementById("app-wrapper-" + appId);
+            const input = document.getElementById("input-app-" + appId);
+            if (wrapper) wrapper.remove();
+            if (input) input.remove();
         }
-    };
+    </script>
+</head>
+<body class="bg-light">
+{% include 'theme_toggle.html' %}
 
-    window.removeApplication = function(appId) {
-        let appElement = document.querySelector(`[data-app-id='${appId}']`);
-        if (appElement) {
-            appElement.remove();
-        }
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        <h1 class="text-center mb-4">Modifier la Procédure</h1>
+        <form method="POST" action="{{ url_for('edit_procedure', id=procedure['id']) }}" enctype="multipart/form-data">
+            {% set couleurs = procedure["couleurs"].split(', ') if procedure["couleurs"] else ['#5D5D5D'] %}
+            {% set couleurs_dict = {} %}
+            {% for app in applications %}
+                {% set _ = couleurs_dict.update({ app.id: app.couleur }) %}
+            {% endfor %}
+            {% set couleurs_count = couleurs | length %}
+            {% set section_index = 0 %}
 
-        let apps = hiddenField.value ? hiddenField.value.split(",") : [];
-        hiddenField.value = apps.filter(id => id !== appId).join(",");
-    };
-});
-</script>
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Titre</label>
+                    <input type="text" class="form-control" name="titre" value="{{ procedure['titre'] }}" required>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
 
-<script>
-function removeApplication(appId) {
-    document.getElementById("app_" + appId).remove();
-    let hiddenField = document.getElementById("application_id");
-    let apps = hiddenField.value.split(",");
-    hiddenField.value = apps.filter(id => id !== appId).join(",");
-}
-</script>
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Mots-clés</label>
+                    <input type="text" class="form-control" name="mots_cles" value="{{ procedure['mots_cles'] }}">
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
 
-<script>
-function removeApplication(appId) {
-    let appElement = document.querySelector(`[data-app-id='${appId}']`);
-    if (appElement) {
-        appElement.remove();
-    }
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Description</label>
+                    <textarea class="form-control" name="description">{{ procedure["description"] }}</textarea>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
 
-    let hiddenField = document.getElementById("application_id");
-    let apps = hiddenField.value.split(",");
-    hiddenField.value = apps.filter(id => id !== appId).join(",");
-}
-</script>
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Applications Impactées</label>
+                    <div class="mb-3">
+                        <select class="form-select" id="application_select">
+                            {% for app in applications %}
+                                <option value="{{ app.id }}">{{ app.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="add_app_btn">Ajouter</button>
+                    </div>
+                    <div id="app_list" class="mb-2 d-flex flex-wrap align-items-center">
+                        {% for app in applications_associees %}
+                            <div class="d-flex align-items-center me-2 mb-2" id="app-wrapper-{{ app.id }}">
+                                <span class="badge p-2" style="background-color: {{ app.couleur }}; color: white;">{{ app.nom }}</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-1" style="padding: 2px 6px; font-size: 0.8rem;"
+                                        onclick="removeApp('{{ app.id }}')">✖</button>
+                                <input type="hidden" name="application_id[]" value="{{ app.id }}" id="input-app-{{ app.id }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Acteur</label>
+                    <input type="text" class="form-control" name="acteur" value="{{ procedure['acteur'] }}">
+                </div>
+            </div>
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Vérificateur</label>
+                    <input type="text" class="form-control" name="verificateur" value="{{ procedure['verificateur'] }}">
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Résolution</label>
+                    <textarea class="form-control" name="protocole_resolution">{{ procedure['protocole_resolution'] }}</textarea>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Vérification</label>
+                    <textarea class="form-control" name="protocole_verification">{{ procedure['protocole_verification'] }}</textarea>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Base de Données Impactée</label>
+                    <textarea class="form-control" name="base_donnees">{{ procedure['base_donnees'] }}</textarea>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Référence Ticket</label>
+                    <input type="text" class="form-control" name="reference_ticket" value="{{ procedure['reference_ticket'] }}">
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Pièces Jointes</label>
+                    <input type="file" class="form-control" name="pieces_jointes">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                <a href="{{ url_for('home') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

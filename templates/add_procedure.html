@@ -1,165 +1,182 @@
+<!-- ✅ Nouveau add_procedure.html avec mise en forme en cartes + badges applications -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(textarea => {
-            textarea.style.height = textarea.scrollHeight + 'px';
-            textarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = this.scrollHeight + 'px';
+      // Applique le mode sombre au plus tôt
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    </script>
+    <title>Ajouter une Procédure</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme-toggle.css') }}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll("textarea").forEach(textarea => {
+                textarea.style.height = textarea.scrollHeight + "px";
+                textarea.addEventListener("input", function() {
+                    this.style.height = "auto";
+                    this.style.height = this.scrollHeight + "px";
+                });
+            });
+
+            const couleurs = {{ couleurs_dict|tojson|safe }};
+            const appSelect = document.getElementById("application_select");
+            const appListContainer = document.getElementById("app_list");
+
+            document.getElementById("add_app_btn").addEventListener("click", function() {
+                const selectedOption = appSelect.options[appSelect.selectedIndex];
+                const appId = selectedOption.value;
+                const appName = selectedOption.text;
+
+                if (!document.getElementById("app-wrapper-" + appId)) {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "d-flex align-items-center me-2 mb-2";
+                    wrapper.id = "app-wrapper-" + appId;
+
+                    const span = document.createElement("span");
+                    span.className = "badge p-2";
+                    span.style.backgroundColor = couleurs[appId] || "#5D5D5D";
+                    span.style.color = "white";
+                    span.textContent = appName;
+
+                    const closeBtn = document.createElement("button");
+                    closeBtn.className = "btn btn-sm btn-outline-danger ms-1";
+                    closeBtn.style.padding = "2px 6px";
+                    closeBtn.style.fontSize = "0.8rem";
+                    closeBtn.type = "button";
+                    closeBtn.innerText = "✖";
+                    closeBtn.onclick = () => removeApp(appId);
+
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "application_id[]";
+                    input.value = appId;
+                    input.id = "input-app-" + appId;
+
+                    wrapper.appendChild(span);
+                    wrapper.appendChild(closeBtn);
+                    wrapper.appendChild(input);
+
+                    appListContainer.appendChild(wrapper);
+                }
             });
         });
-    });
-</script>
 
+        function removeApp(appId) {
+            const wrapper = document.getElementById("app-wrapper-" + appId);
+            const input = document.getElementById("input-app-" + appId);
+            if (wrapper) wrapper.remove();
+            if (input) input.remove();
+        }
+    </script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 </head>
 <body class="bg-light">
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">{{ title }}</h1>
+{% include 'theme_toggle.html' %}
 
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        <h1 class="text-center mb-4">Ajouter une Procédure</h1>
         <form method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="mots_cles" class="form-label">Mots Clés</label>
-                <input type="text" class="form-control" id="mots_cles" name="mots_cles" value="{{ procedure[1] if procedure else '' }}">
-            </div>
+            {% set couleurs = couleurs_dict.values()|list %}
+            {% set section_index = 0 %}
+            {% set couleurs_count = couleurs|length %}
 
-            <div class="mb-3">
-                <label for="titre" class="form-label">Titre</label>
-                <input type="text" class="form-control" id="titre" name="titre" value="{{ procedure[2] if procedure else '' }}">
-            </div>
+            {% set champs = [
+                ('Titre', 'titre', 'text'),
+                ('Mots-clés', 'mots_cles', 'text'),
+                ('Description', 'description', 'textarea'),
+                ('Protocole de Résolution', 'protocole_resolution', 'textarea'),
+                ('Protocole de Vérification', 'protocole_verification', 'textarea'),
+                ('Acteur', 'acteur', 'text'),
+                ('Vérificateur', 'verificateur', 'text'),
+                ('Base de Données Impactée', 'base_donnees', 'text'),
+                ('Référence Ticket', 'reference_ticket', 'text')
+            ] %}
 
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" name="description">{{ procedure[3] if procedure else '' }}</textarea>
+            {% for label, name, type in champs %}
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">{{ label }}</label>
+                    {% if type == 'textarea' %}
+                        <textarea class="form-control" name="{{ name }}" id="{{ name }}">{{ procedure[name] if procedure else '' }}</textarea>
+                    {% else %}
+                        <input type="text" class="form-control" name="{{ name }}" value="{{ procedure[name] if procedure else '' }}">
+                    {% endif %}
+                </div>
             </div>
+            {% set section_index = section_index + 1 %}
+            {% endfor %}
 
-            <div class="mb-3">
-                <label for="protocole_resolution" class="form-label">Protocole de Résolution</label>
-                <textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure[4] if procedure else '' }}</textarea>
+            <!-- Applications impactées -->
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Applications Impactées</label>
+                    <div class="mb-3">
+                        <select class="form-select" id="application_select">
+                            {% for app in applications %}
+                                <option value="{{ app.id }}">{{ app.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="add_app_btn">Ajouter</button>
+                    </div>
+                    <div id="app_list" class="mb-2 d-flex flex-wrap align-items-center"></div>
+                </div>
             </div>
+            {% set section_index = section_index + 1 %}
 
-            <div class="mb-3">
-                <label for="protocole_verification" class="form-label">Protocole de Vérification</label>
-                <textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure[5] if procedure else '' }}</textarea>
-            </div>
-
-            <div class="mb-3">
-                <label for="acteur" class="form-label">Acteur</label>
-                <input type="text" class="form-control" id="acteur" name="acteur" value="{{ procedure[6] if procedure else '' }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="verificateur" class="form-label">Vérificateur</label>
-                <input type="text" class="form-control" id="verificateur" name="verificateur" value="{{ procedure[7] if procedure else '' }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="utilisateur" class="form-label">Utilisateur</label>
-                <input type="text" class="form-control" id="utilisateur" name="utilisateur" value="{{ procedure[11] if procedure else '' }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="reference_ticket" class="form-label">Référence Ticket</label>
-                <input type="text" class="form-control" id="reference_ticket" name="reference_ticket" value="{{ procedure[9] if procedure else '' }}">
-            </div>
-
-            <div class="mb-3">
-                <label for="application_select" class="form-label">Sélectionner une Application</label>
-                <div class="input-group">
-                    <select id="application_select" class="form-select">
-                        <option value="">-- Sélectionner --</option>
-                        {% for app in applications %}
-                            <option value="{{ app[0] }}">{{ app[1] }}</option>
-                        {% endfor %}
-                    </select>
-                    <button type="button" class="btn btn-primary" onclick="addApplication()">Ajouter</button>
+            <!-- Pièces jointes -->
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Pièces Jointes</label>
+                    <div id="file_inputs_container"></div>
+                    <button type="button" class="btn btn-secondary mt-2" onclick="addFileInput()">Ajouter une pièce jointe</button>
+                    <script>
+                        function addFileInput() {
+                            const container = document.getElementById('file_inputs_container');
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.name = 'pieces_jointes[]';
+                            input.className = 'form-control mt-2';
+                            container.appendChild(input);
+                        }
+                    </script>
                 </div>
             </div>
 
-            <!-- Champ qui affichera les applications sélectionnées -->
-            <div class="mb-3">
-                <label class="form-label">Applications Impactées</label>
-                <ul id="selected_applications_list"></ul>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                <a href="{{ url_for('home') }}" class="btn btn-secondary">Annuler</a>
             </div>
-
-            <!-- Champ caché pour stocker les applications sélectionnées -->
-            <input type="hidden" name="application_id" id="application_id" value="">
-
-            <script>
-                function addApplication() {
-                    let select = document.getElementById("application_select");
-                    let selectedAppId = select.value;
-                    let selectedAppName = select.options[select.selectedIndex].text;
-                    let selectedList = document.getElementById("selected_applications_list");
-                    let hiddenField = document.getElementById("application_id");
-
-                    if (selectedAppId && !document.getElementById("app_" + selectedAppId)) {
-                        // Ajouter l'application sélectionnée à la liste affichée
-                        let listItem = document.createElement("li");
-                        listItem.id = "app_" + selectedAppId;
-                        listItem.innerHTML = `${selectedAppName}
-                            <button type="button" class="btn btn-danger btn-sm" onclick="removeApplication('${selectedAppId}')">❌</button>`;
-                        selectedList.appendChild(listItem);
-
-                        // Ajouter l'ID au champ caché
-                        if (hiddenField.value) {
-                            hiddenField.value += "," + selectedAppId;
-                        } else {
-                            hiddenField.value = selectedAppId;
-                        }
-                    }
-                }
-
-                function removeApplication(appId) {
-                    // Supprimer l'élément de la liste
-                    document.getElementById("app_" + appId).remove();
-
-                    // Mettre à jour le champ caché
-                    let hiddenField = document.getElementById("application_id");
-                    let apps = hiddenField.value.split(",");
-                    hiddenField.value = apps.filter(id => id !== appId).join(",");
-                }
-            </script>
-
-            <div class="mb-3">
-                <label for="base_donnees" class="form-label">Base de Données Impactée</label>
-                <input type="text" class="form-control" id="base_donnees" name="base_donnees" value="{{ procedure[10] if procedure else '' }}">
-            </div>
-
-            <h5>Pièces Jointes :</h5>
-                <ul id="existing_files_list">
-                    {% for file in pieces_jointes_links %}
-                        <li><a href="{{ url_for('open_file', file_path=file) }}" target="_blank">{{ file.split('/')[-1] }}</a></li>
-                    {% endfor %}
-                </ul>
-
-                <button type="button" class="btn btn-secondary" onclick="addFileInput()">Ajouter une pièce jointe</button>
-                <div id="file_inputs_container"></div>
-
-                <script>
-                    function addFileInput() {
-                        const container = document.getElementById('file_inputs_container');
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.name = 'pieces_jointes[]';
-                        input.className = 'form-control mb-2';
-                        container.appendChild(input);
-                    }
-                </script>
-
-            <button type="submit" class="btn btn-primary">Sauvegarder</button>
         </form>
-
-
-        <div class="text-center mt-4">
-            <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
-        </div>
     </div>
+</div>
+
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+<script>
+    const champsCKEditor = ['description', 'protocole_resolution', 'protocole_verification'];
+
+    champsCKEditor.forEach(fieldId => {
+        const textarea = document.getElementById(fieldId);
+        if (textarea) {
+            ClassicEditor
+                .create(textarea, {
+                    ckfinder: {
+                        uploadUrl: '{{ url_for("upload_image") }}'
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur CKEditor sur", fieldId, error);
+                });
+        }
+    });
+</script>
+<script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

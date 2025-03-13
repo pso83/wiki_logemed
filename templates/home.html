@@ -3,46 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Applique le mode sombre au plus tôt
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    </script>
     <title>Wiki des Procédures</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme-toggle.css') }}">
 </head>
-<body>
+<body class="bg-light">
+    {% include 'theme_toggle.html' %}
 
-<div class="container mt-5">
-    <div class="container-fluid mt-3"> <!-- ✅ Utilisation de container-fluid pour plus d'espace -->
-        <div class="d-flex justify-content-between align-items-center flex-wrap header-bar">
-            <!-- ✅ Titre à gauche -->
-            <h2 class="page-title m-0">Gestion des Procédures</h2>
-
-            <!-- ✅ Boutons à droite -->
-            <div class="d-flex gap-2 button-group">
-                <a href="{{ url_for('configuration') }}" class="btn btn-sm btn-outline-primary">Configuration</a>
-                <a href="{{ url_for('gestion_a_verifier') }}" class="btn btn-sm btn-outline-warning">Procédures à Vérifier</a>
-                <a href="{{ url_for('add_procedure') }}" class="btn btn-sm btn-outline-success">Ajouter une Procédure</a>
-                <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger">Déconnexion</a>
+    <div class="container mt-5">
+        <div class="container-fluid mt-3"> <!-- ? Utilisation de container-fluid pour plus d'espace -->
+            <div class="d-flex justify-content-between align-items-start flex-wrap header-bar">
+                <h1 class="page-title m-0">Gestion des Procédures</h1>
+                <div class="d-flex gap-2 button-group flex-wrap align-items-start">
+                    <a href="{{ url_for('configuration') }}" class="btn btn-sm btn-outline-primary">Configuration</a>
+                    <a href="{{ url_for('gestion_a_verifier') }}" class="btn btn-sm btn-outline-warning">Procédures à Vérifier</a>
+                    <a href="{{ url_for('add_procedure') }}" class="btn btn-sm btn-outline-success">Ajouter une Procédure</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger">Déconnexion</a>
+                    <div id="theme-toggle-container">
+                        <button id="toggle-theme-btn" onclick="toggleDarkMode()"></button>
+                    </div>
+                </div>
             </div>
         </div>
+
+    <!-- ? Notifications pour les procédures à valider et à corriger -->
+    <div class="alert-container">
+        {% if procedures_a_valider > 0 and session.get("est_moderateur") %}
+            <div class="alert alert-warning">
+                <span>⚠️ <strong>{{ procedures_a_valider }}</strong> procédures nécessitent une validation.</span>
+                <a href="{{ url_for('gestion_procedures_a_valider') }}" class="btn btn-sm btn-primary">Voir</a>
+            </div>
+        {% endif %}
+
+        {% if procedures_a_corriger > 0 %}
+            <div class="alert alert-danger">
+                <span>⚠️ <strong>{{ procedures_a_corriger }}</strong> procédures à corriger.</span>
+            </div>
+        {% endif %}
     </div>
-    <!-- ✅ Notifications pour les procédures à valider et à corriger -->
-    {% if procedures_a_valider > 0 and session.get("est_moderateur") %}
-        <div class="alert alert-warning" role="alert">
-            ⚠️ Il y a <strong>{{ procedures_a_valider }}</strong> procédures nécessitant une validation.
-            <a href="{{ url_for('gestion_procedures_a_valider') }}" class="btn btn-sm btn-primary">Voir et valider</a>
-        </div>
-    {% endif %}
 
-    {% if procedures_a_corriger > 0 %}
-        <div class="alert alert-danger d-inline-block" style="max-width: 500px;" role="alert">
-            ⚠️ Vous avez <strong>{{ procedures_a_corriger }}</strong> procédures à corriger.
-        </div>
-    {% endif %}
-
-    <!-- ✅ Filtre par application et par mots clés-->
+    <!-- ? Filtre par application et par mots clés-->
     <form method="GET" action="/">
         <div class="row g-3 align-items-center mb-4">
-            <!-- ✅ Champ de recherche par mots-clés -->
+            <!-- ? Champ de recherche par mots-clés -->
             <div class="col-md-8">
                 <div class="input-group">
                     <input type="text" name="search_keywords" class="form-control"
@@ -52,105 +63,124 @@
                 </div>
             </div>
 
-            <!-- ✅ Filtre par application -->
+            <!-- ? Filtre par application -->
             <div class="col-md-4">
                 <select name="search_application" class="form-select" onchange="this.form.submit()">
                     <option value="">Toutes les applications</option>
                     {% for app in applications %}
-                        <option value="{{ app[id] }}" {% if search_application == app[0]|string %}selected{% endif %}>
-                            {{ app['nom'] }}
+                        <option value="{{ app["id"] }}" {% if search_application == app["id"]|string %}selected{% endif %}>
+                            {{ app["nom"] }}
                         </option>
                     {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="search_statut" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tous les statuts</option>
+                    <option value="Validée" {% if search_statut == 'Validée' %}selected{% endif %}>Validée</option>
+                    <option value="À valider" {% if search_statut == 'À valider' %}selected{% endif %}>À valider</option>
+                    <option value="À vérifier" {% if search_statut == 'À vérifier' %}selected{% endif %}>À vérifier</option>
+                    <option value="Rejetée" {% if search_statut == 'Rejetée' %}selected{% endif %}>Rejetée</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="order_by" class="form-select w-100" style="min-width: 220px;" onchange="this.form.submit()">
+                    <option value="desc" {% if order_by == 'desc' %}selected{% endif %}>Plus récent d'abord</option>
+                    <option value="asc" {% if order_by == 'asc' %}selected{% endif %}>Plus ancien d'abord</option>
                 </select>
             </div>
         </div>
     </form>
 
-    <!-- ✅ Tableau des procédures -->
+    <!-- ? Tableau des procédures -->
     <div class="container mt-4">
-    <div class="row">
-        {% for procedure in procedures %}
-        <div class="col-12 mb-2">
-            <div class="card procedure-card"
-                 style="border: 2px solid {{ procedure['couleurs'].split(',')[0] if procedure['couleurs'] else '#007bff' }};">
+        <div class="row">
+            {% for procedure in procedures %}
+            <div class="col-12 mb-2">
+                <div class="card procedure-card"
+                     style="border: 2px solid {{ procedure['couleurs'].split(',')[0] if procedure['couleurs'] else '#007bff' }};">
 
-                <!-- ✅ Titre avec couleur de l'application et statut -->
-                <div class="card-header d-flex justify-content-between align-items-center procedure-title"
-                     style="background-color: {{ procedure['couleurs'].split(',')[0] if procedure['couleurs'] else '#007bff' }};">
-                    <h5 class="text-white m-0">{{ procedure['titre'] }}</h5>
-                    <span class="badge
-                        {% if procedure['statut'] == 'À valider' %} bg-danger
-                        {% elif procedure['statut'] == 'Validée' %} bg-success
-                        {% elif procedure['statut'] == 'À vérifier' %} bg-warning
-                        {% elif procedure['statut'] == 'Rejetée' %} bg-danger {% endif %}">
-                        {{ procedure['statut'] }}
-                    </span>
-                </div>
-
-                <div class="card-body">
-                    <p class="text-muted">{{ procedure['description'] }}</p>
-
-                    <!-- ✅ Applications Impactées avec couleur -->
-                    <p><strong>Applications :</strong></p>
-                    <div class="application-container">
-                        {% if procedure['applications'] and procedure['applications'] != '' %}
-                            {% set applications = procedure['applications'].split(', ') %}
-                            {% set couleurs = procedure['couleurs'].split(', ') if procedure['couleurs'] and procedure['couleurs'] != '' else [] %}
-                            {% for app in applications %}
-                                <span class="application-badge"
-                                      style="background-color: {{ couleurs[loop.index0] if loop.index0 < couleurs|length else '#cccccc' }};
-                                             color: white;">
-                                    {{ app }}
-                                </span>
-                            {% endfor %}
-                        {% else %}
-                            <span class="application-badge" style="background-color: black; color: white;">
-                                Aucune application
-                            </span>
-                        {% endif %}
+                    <!-- ✅ Titre avec couleur de l'application et statut -->
+                    <div class="card-header d-flex justify-content-between align-items-center procedure-title"
+                         style="background-color: {{ procedure['couleurs'].split(',')[0] if procedure['couleurs'] else '#007bff' }};">
+                        <h5 class="text-white m-0">{{ procedure['titre'] }}</h5>
+                        <span class="badge
+                            {% if procedure['statut'] == 'À valider' %} bg-danger
+                            {% elif procedure['statut'] == 'Validée' %} bg-success
+                            {% elif procedure['statut'] == 'À vérifier' %} bg-warning
+                            {% elif procedure['statut'] == 'Rejetée' %} bg-danger {% endif %}">
+                            {{ procedure['statut'] }}
+                        </span>
                     </div>
+                    <div class="card-body">
+                       <p>Créé par : <strong>{{ procedure['utilisateur'] }}</strong></p>
+                        <div class="markdown-content">{{ procedure['description'] | convertir_markdown }}</div>
 
-                    <!-- ✅ Barre d'interaction -->
-                    <div class="d-flex justify-content-between align-items-center interaction-bar">
-                        <span class="text-muted">👀 {{ procedure['vues'] }} vues</span>
-
-                        <!-- ✅ J'aime / J'aime pas -->
-                        <div class="d-flex align-items-center justify-content-center like-buttons">
-                            <button id="like-{{ procedure.id }}"
-                                    class="btn btn-sm btn-outline-success vote-button"
-                                    data-id="{{ procedure.id }}"
-                                    data-vote-type="like">
-                                👍 <span id="likes-count-{{ procedure.id }}">{{ procedure.likes }}</span>
-                            </button>
-                            <button id="dislike-{{ procedure.id }}"
-                                    class="btn btn-sm btn-outline-danger vote-button"
-                                    data-id="{{ procedure.id }}"
-                                    data-vote-type="dislike">
-                                👎 <span id="dislikes-count-{{ procedure.id }}">{{ procedure.dislikes }}</span>
-                            </button>
-                        </div>
-                        <!-- ✅ Actions -->
-                        <div class="action-buttons d-flex align-items-center">
-                            <a href="{{ url_for('view_procedure', id=procedure['id']) }}" class="btn btn-sm btn-primary me-2">Afficher</a>
-
-                            {% if session.get("username") == procedure['utilisateur'] %}
-                                {% if procedure['statut'] == 'Rejetée' %}
-                                    <a href="{{ url_for('edit_procedure', id=procedure['id']) }}" class="btn btn-sm btn-primary me-2">Corriger</a>
-                                {% else %}
-                                    <a href="{{ url_for('edit_procedure', id=procedure['id']) }}" class="btn btn-sm btn-warning me-2">Modifier</a>
-                                {% endif %}
-                                <form method="POST" action="{{ url_for('soft_delete', id=procedure['id']) }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                                </form>
+                        <!-- ✅ Applications Impactées avec couleur -->
+                        <p><strong>Applications :</strong></p>
+                        <div class="application-container">
+                            {% if procedure['applications'] and procedure['applications'] != '' %}
+                                {% set applications = procedure['applications'].split(', ') %}
+                                {% set couleurs = procedure['couleurs'].split(', ') if procedure['couleurs'] and procedure['couleurs'] != '' else [] %}
+                                {% for app in applications %}
+                                    <span class="application-badge"
+                                          style="background-color: {{ couleurs[loop.index0] if loop.index0 < couleurs|length else '#cccccc' }};
+                                                 color: white;">
+                                        {{ app }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="application-badge" style="background-color: black; color: white;">
+                                    Aucune application
+                                </span>
                             {% endif %}
+                        </div>
+
+                        <!-- ✅ Barre d'interaction -->
+                        <div class="d-flex justify-content-between align-items-center interaction-bar">
+                            <span class="text-muted">👀 {{ procedure['vues'] }} vues</span>
+
+                            <!-- ✅ J'aime / J'aime pas -->
+                            <div class="d-flex align-items-center justify-content-center like-buttons">
+                                <button id="like-{{ procedure.id }}"
+                                        class="btn btn-sm btn-outline-success vote-button"
+                                        data-id="{{ procedure.id }}"
+                                        data-vote-type="like">
+                                    👍 <span id="likes-count-{{ procedure.id }}">{{ procedure.likes }}</span>
+                                </button>
+                                <button id="dislike-{{ procedure.id }}"
+                                        class="btn btn-sm btn-outline-danger vote-button"
+                                        data-id="{{ procedure.id }}"
+                                        data-vote-type="dislike">
+                                    👎 <span id="dislikes-count-{{ procedure.id }}">{{ procedure.dislikes }}</span>
+                                </button>
+                            </div>
+                            <!-- ✅ Actions -->
+                            <div class="action-buttons d-flex align-items-center">
+                                <!-- ✅ Bouton "Afficher" -->
+                                <a href="{{ url_for('view_procedure', id=procedure['id']) }}" class="btn btn-sm btn-primary me-2">Afficher</a>
+
+                                <!-- ✅ Bouton "Modifier" (uniquement pour l'auteur) -->
+                                {% set user = session.get("username") | trim | lower %}
+                                {% set auteur = procedure['utilisateur'] | trim | lower %}
+
+                                {% if user == auteur %}
+                                    <a href="{{ url_for('edit_procedure', id=procedure['id']) }}" class="btn btn-sm btn-warning me-2">Modifier</a>
+                                    {% if procedure['statut'] == 'Rejetée' %}
+                                        <a href="{{ url_for('edit_procedure', id=procedure['id']) }}" class="btn btn-sm btn-purple me-2">Corriger</a>
+                                    {% endif %}
+                                    <form method="POST" action="{{ url_for('soft_delete', id=procedure['id']) }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
-</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -167,18 +197,13 @@ function refreshAlerts() {
     });
 }
 
-setInterval(refreshAlerts, 10000);  // ✅ Rafraîchir les alertes toutes les 10 secondes
+setInterval(refreshAlerts, 10000);  // ? Rafraîchir les alertes toutes les 10 secondes
 </script>
 
 <script>
-document.getElementById("search_application").addEventListener("change", function() {
-    this.form.submit();  // ✅ Appliquer automatiquement le filtre des applications
-});
-</script>
-<script>
     document.querySelectorAll(".vote-button").forEach(button => {
         button.addEventListener("click", function (event) {
-            event.preventDefault();  // ✅ Empêcher le rechargement de la page
+            event.preventDefault();  // ? Empêcher le rechargement de la page
 
             let procedureId = this.getAttribute("data-id");
             let voteType = this.getAttribute("data-vote-type");
@@ -195,7 +220,7 @@ document.getElementById("search_application").addEventListener("change", functio
                     document.querySelector(`#likes-count-${procedureId}`).innerText = data.likes;
                     document.querySelector(`#dislikes-count-${procedureId}`).innerText = data.dislikes;
 
-                    // ✅ Mise à jour des boutons en fonction du vote
+                    // ? Mise à jour des boutons en fonction du vote
                     if (data.vote_status === "like") {
                         likeButton.classList.add("btn-success");
                         likeButton.classList.remove("btn-outline-success");
@@ -207,7 +232,7 @@ document.getElementById("search_application").addEventListener("change", functio
                         likeButton.classList.add("btn-outline-success");
                         likeButton.classList.remove("btn-success");
                     } else {
-                        // ✅ Annulation du vote
+                        // ? Annulation du vote
                         likeButton.classList.add("btn-outline-success");
                         likeButton.classList.remove("btn-success");
                         dislikeButton.classList.add("btn-outline-danger");
@@ -219,5 +244,10 @@ document.getElementById("search_application").addEventListener("change", functio
         });
     });
 </script>
+<script>
+    console.log("DEBUG - Nombre de procédures affichées :", document.querySelectorAll(".procedure-card").length);
+</script>
+
+<script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

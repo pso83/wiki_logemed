@@ -3,8 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Applique le mode sombre au plus tôt
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.documentElement.classList.add("dark-mode");
+      }
+    </script>
     <title>Procédures Supprimées</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme-toggle.css') }}">
     <style>
         /* ✅ Style pour les badges */
         .application-badge {
@@ -39,6 +48,7 @@
     </style>
 </head>
 <body>
+{% include 'theme_toggle.html' %}
 
 <div class="container mt-5">
     <h1 class="text-center mb-4">Procédures Supprimées</h1>
@@ -65,14 +75,14 @@
         <tbody>
             {% for procedure in procedures %}
             <tr>
-                <td>{{ procedure[1] }}</td>
-                <td>{{ procedure[2] }}</td>
-                <td>{{ procedure[3] }}</td>
-                <td>{{ procedure[4] }}</td>
+                <td>{{ procedure["titre"] }}</td>
+                <td>{{ procedure["description"] }}</td>
+                <td>{{ procedure["mots_cles"] }}</td>
+                <td>{{ procedure["reference_ticket"] }}</td>
                 <td>
                     <div class="application-container">
-                        {% if procedure[5] %}
-                            {% set applications = procedure[5].split(', ') %}
+                        {% if procedure["applications"] %}
+                            {% set applications = procedure["applications"].split(', ') %}
                             {% for app in applications %}
                                 <span class="application-badge" style="background-color: #dc3545; color: white;">
                                     {{ app }}
@@ -85,15 +95,15 @@
                         {% endif %}
                     </div>
                 </td>
-                <td><span class="badge bg-secondary">{{ procedure[6] }}</span></td>
-                <td>{{ procedure[7] }}</td>
+                <td><span class="badge bg-secondary">{{ procedure["statut"] }}</span></td>
+                <td>{{ procedure["auteur"] }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

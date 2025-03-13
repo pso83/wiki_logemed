@@ -15,10 +15,10 @@ import MySQLdb.cursors
 # backend
 app = Flask(__name__)
 
-# ✅ Activer le logging pour voir les routes disponibles
+# ? Activer le logging pour voir les routes disponibles
 logging.basicConfig(level=logging.DEBUG)
 
-# ✅ Afficher toutes les routes enregistrées dans Flask
+# ? Afficher toutes les routes enregistrées dans Flask
 for rule in app.url_map.iter_rules():
     logging.debug(f"Route disponible: {rule}")
 
@@ -28,7 +28,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf", "docx"}
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# ✅ Vérifie que l'extension du fichier est autorisée
+# ? Vérifie que l'extension du fichier est autorisée
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -54,12 +54,12 @@ def get_db_connection():
         passwd=DB_PASSWORD,
         db=DB_NAME,
         charset='utf8mb4',
-        cursorclass = MySQLdb.cursors.DictCursor  # ✅ Correction ici
+        cursorclass = MySQLdb.cursors.DictCursor  # ? Correction ici
     )
 
 # Fonction pour formater les blocs de code
 def format_code_blocks(text):
-    return re.sub(r'\[(.*?)\]', r'<pre><code class="sql">\1</code></pre>', text, flags=re.DOTALL)
+    return re.sub(r'\[\s*([\s\S]*?)\s*\]', r'<pre><code>\1</code></pre>', text, flags=re.MULTILINE)
 
 
 # Fonction pour téléverser un fichier sur le serveur FTP
@@ -85,23 +85,28 @@ def is_moderateur():
     return session.get("est_moderateur", False) == True
 
 
-# ✅ Fonction améliorée pour reconnaître le code SQL et WinDev entre []
+# ? Fonction améliorée pour reconnaître le code SQL et WinDev entre []
 def convertir_markdown(texte):
     if texte:
-        # ✅ Détection des blocs de code SQL et WinDev avec balises `[SQL]...[/SQL]` et `[WinDev]...[/WinDev]`
+        # 🔸 Nettoyage des balises <p>
+        texte = re.sub(r'</?p>', '', texte, flags=re.IGNORECASE)
+
+        # 🔸 Bloc SQL multi-lignes
         texte = re.sub(r'\[SQL\](.*?)\[/SQL\]', r'<pre class="language-sql"><code>\1</code></pre>', texte, flags=re.DOTALL)
+
+        # 🔸 Bloc WinDev multi-lignes
         texte = re.sub(r'\[WinDev\](.*?)\[/WinDev\]', r'<pre class="language-windev"><code>\1</code></pre>', texte, flags=re.DOTALL)
 
-        # ✅ Détection des blocs de code génériques entre [ ]
-        texte = re.sub(r'\[(.*?)\]', r'<pre class="language-generic"><code>\1</code></pre>', texte)
+        # 🔸 Bloc générique multi-lignes entre [ ]
+        texte = re.sub(r'\[\s*([\s\S]*?)\s*\]', r'<pre class="language-generic"><code>\1</code></pre>', texte, flags=re.DOTALL)
 
-        # ✅ Application du Markdown pour le reste du contenu
+        # 🔸 Markdown général
         texte_html = markdown.markdown(texte, extensions=["extra", "nl2br", "sane_lists"])
 
-        return Markup(texte_html)  # ✅ Markup permet d'afficher du HTML sécurisé dans Jinja
+        return Markup(texte_html)
     return ""
 
-# ✅ Ajout du filtre Jinja
+# ? Ajout du filtre Jinja
 app.jinja_env.filters['convertir_markdown'] = convertir_markdown
 
 @app.route('/preview/<path:filename>')
@@ -130,17 +135,6 @@ def update_procedures_status():
     cursor.close()
     conn.close()
 
-import re
-import markdown
-
-# ✅ Fonction pour convertir les blocs de code [texte] en <pre><code>texte</code></pre>
-def format_code_blocks(text):
-    if text:
-        text = re.sub(r'\[(.*?)\]', r'<pre><code>\1</code></pre>', text, flags=re.DOTALL)
-        return markdown.markdown(text)
-    return ""
-
-
 @app.route('/view/<int:id>')
 def view_procedure(id):
     if 'user_id' not in session:
@@ -149,17 +143,18 @@ def view_procedure(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ✅ Incrémente le compteur de vues
-    cursor.execute("UPDATE procedures SET vues = vues + 1 WHERE id = %s", (id,))
-    conn.commit()
+    # ✅ Incrémentation du nombre de vues
+    try:
+        cursor.execute("UPDATE procedures SET vues = vues + 1 WHERE id = %s", (id,))
+        conn.commit()
+    except Exception as e:
+        print(f"❌ ERREUR lors de l'incrémentation des vues : {e}")
 
+    # ✅ Récupération des données de la procédure
     cursor.execute("""
-        SELECT p.id, p.titre, p.mots_cles, p.description, p.base_donnees, 
-               p.protocole_resolution, p.protocole_verification, 
-               p.acteur, p.verificateur, p.utilisateur, 
-               COALESCE(p.pieces_jointes, '') AS pieces_jointes,
-               GROUP_CONCAT(a.nom SEPARATOR ', ') AS applications,
-               GROUP_CONCAT(a.couleur SEPARATOR ', ') AS couleurs
+        SELECT p.*, 
+               COALESCE(GROUP_CONCAT(DISTINCT a.nom ORDER BY a.id SEPARATOR ', '), 'Aucune application') AS applications,
+               COALESCE(GROUP_CONCAT(DISTINCT a.couleur ORDER BY a.id SEPARATOR ', '), '#5D5D5D') AS couleurs
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
@@ -168,25 +163,13 @@ def view_procedure(id):
     """, (id,))
 
     procedure = cursor.fetchone()
-
     cursor.close()
     conn.close()
 
     if not procedure:
-        abort(404)  # ✅ Retourner une erreur 404 si aucune procédure n'est trouvée
+        return "Procédure non trouvée", 404
 
-    # ✅ Accéder aux valeurs par les **clés du dictionnaire** au lieu d'indices numériques
-    formatted_description = format_code_blocks(procedure["description"])
-    formatted_resolution = format_code_blocks(procedure["protocole_resolution"])
-    formatted_verification = format_code_blocks(procedure["protocole_verification"])
-
-    return render_template(
-        'view_procedure.html',
-        procedure=procedure,
-        formatted_description=formatted_description,
-        formatted_resolution=formatted_resolution,
-        formatted_verification=formatted_verification
-    )
+    return render_template('view_procedure.html', procedure=procedure)
 
 @app.route('/')
 def home():
@@ -198,12 +181,10 @@ def home():
 
     search_keywords = request.args.get('search_keywords', '').strip()
     search_application = request.args.get('search_application', '').strip()
+    search_statut = request.args.get('search_statut', '').strip()
+    order_by = request.args.get('order_by', 'desc').strip()  # desc par défaut
 
-    # ✅ Assurer une valeur par défaut
-    procedures_a_valider = 0
-    procedures_a_corriger = 0
-
-    # ✅ Requête principale pour récupérer les procédures
+    # ? Requête principale pour récupérer les procédures
     query = """
         SELECT 
             p.id, 
@@ -225,61 +206,102 @@ def home():
              WHERE pa.procedure_id = p.id) AS couleurs,
             p.utilisateur  
         FROM procedures p
-        WHERE p.est_supprime = 0 OR p.est_supprime IS NULL
+        WHERE (p.est_supprime = 0 OR p.est_supprime IS NULL)
     """
 
     params = []
+    filters = []
 
-    # ✅ Recherche par mots-clés
+    # ✅ Vérification du type de recherche (avec "#" uniquement sur mots-clés, sans "#" sur tous les champs)
     if search_keywords:
-        keywords = [kw.strip() for kw in search_keywords.split("#") if kw.strip()]
+        search_keywords = search_keywords.strip().lower()
 
         if search_keywords.startswith("#"):
-            keyword_conditions = " OR ".join(["p.mots_cles LIKE %s" for _ in keywords])
-            query += f" AND ({keyword_conditions})"
-            params.extend([f"%{kw}%" for kw in keywords])
-        else:
-            keyword_conditions = " OR ".join([
-                "p.titre LIKE %s",
-                "p.description LIKE %s",
-                "p.mots_cles LIKE %s",
-                "p.reference_ticket LIKE %s"
-            ])
-            query += f" AND ({keyword_conditions})"
-            params.extend([f"%{search_keywords}%" for _ in range(4)])
+            # ✅ Recherche uniquement dans "mots_cles" avec REGEXP
+            keyword_conditions = " OR ".join(
+                ["LOWER(p.mots_cles) REGEXP %s" for kw in search_keywords.split("#") if kw.strip()])
+            filters.append(f"({keyword_conditions})")
+            params.extend([f"\\b{kw}\\b" for kw in search_keywords.split("#") if kw.strip()])
 
-    # ✅ Filtrage par application
-    if search_application:
-        query += " AND p.id IN (SELECT pa2.procedure_id FROM procedure_applications pa2 WHERE pa2.application_id = %s)"
+        else:
+            # ✅ Recherche générale dans plusieurs colonnes avec LIKE
+            keyword_conditions = " OR ".join([
+                "LOWER(p.mots_cles) LIKE %s",
+                "LOWER(p.titre) LIKE %s",
+                "LOWER(p.description) LIKE %s",
+                "LOWER(p.protocole_resolution) LIKE %s",
+                "LOWER(p.protocole_verification) LIKE %s"
+            ])
+            filters.append(f"({keyword_conditions})")
+            params.extend([f"%{search_keywords}%" for _ in range(5)])  # ✅ Applique %LIKE%
+
+    if search_application and search_application.isdigit():
+        filters.append(
+            "p.id IN (SELECT pa2.procedure_id FROM procedure_applications pa2 WHERE pa2.application_id = %s)")
         params.append(search_application)
 
-    # ✅ Ajouter le GROUP BY pour éviter les erreurs SQL
+    if search_statut:
+        filters.append("p.statut = %s")
+        params.append(search_statut)
+
+    if filters:
+        query += " AND " + " AND ".join(filters)
+
     query += " GROUP BY p.id"
 
+    if order_by.lower() == 'asc':
+        query += " ORDER BY p.id ASC"
+    else:
+        query += " ORDER BY p.id DESC"
+
     try:
-        cursor.execute(query, params)
+        cursor.execute(query, tuple(params))  # ✅ Assure que params est un tuple pour éviter l'erreur
         procedures = cursor.fetchall()
+
     except Exception as e:
-        print(f"🚨 ERREUR SQL : {e}")
+        print(f"?? ERREUR SQL : {e}")
         procedures = []
 
-    # ✅ Conversion en dictionnaire pour éviter les erreurs de clé
-    procedures_dict = [dict(proc) for proc in procedures]
-
-    # ✅ Récupérer les applications
     cursor.execute("SELECT id, nom FROM applications")
     applications = cursor.fetchall()
 
-    # ✅ Fermeture de la connexion
+    # ? Appliquer la mise en forme aux descriptions et protocoles
+    for procedure in procedures:
+        procedure['description'] = format_code_blocks(procedure['description']) if 'description' in procedure and \
+                                                                                   procedure['description'] else ''
+        procedure['protocole_resolution'] = format_code_blocks(
+            procedure['protocole_resolution']) if 'protocole_resolution' in procedure and procedure[
+            'protocole_resolution'] else ''
+        procedure['protocole_verification'] = format_code_blocks(
+            procedure['protocole_verification']) if 'protocole_verification' in procedure and procedure[
+            'protocole_verification'] else ''
+
+    # ? Récupérer le nombre de procédures "À valider" pour les modérateurs
+    cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'À valider'")
+    procedures_a_valider_row = cursor.fetchone()
+    if procedures_a_valider_row is None:
+        procedures_a_valider_row = [0]
+    procedures_a_valider = int(procedures_a_valider_row['COUNT(*)']) if procedures_a_valider_row else 0
+
+    # ? Récupérer le nombre de procédures "Rejetées" pour l'utilisateur connecté
+    cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'Rejetée' AND utilisateur = %s",
+                   (session['username'],))
+    procedures_a_corriger_row = cursor.fetchone()
+    if procedures_a_corriger_row is None:
+        procedures_a_corriger_row = [0]
+    procedures_a_corriger = int(procedures_a_corriger_row['COUNT(*)']) if procedures_a_corriger_row else 0
+
     cursor.close()
     conn.close()
 
     return render_template(
         'home.html',
-        procedures=procedures_dict,
+        procedures=procedures,
         applications=applications,
         search_keywords=search_keywords,
         search_application=search_application,
+        search_statut=search_statut,
+        order_by=order_by,
         procedures_a_valider=procedures_a_valider,
         procedures_a_corriger=procedures_a_corriger
     )
@@ -295,12 +317,11 @@ def login():
 
         cursor.execute("SELECT id, est_admin, est_moderateur FROM utilisateurs WHERE utilisateur = %s AND password = %s",
                        (username, password))
-        user = cursor.fetchone()  # ✅ Récupère l'utilisateur
-        print("DEBUG - Résultat de la requête SQL :", user)
+        user = cursor.fetchone()  # ? Récupère l'utilisateur
         cursor.close()
         conn.close()
 
-        if user:  # ✅ Vérifie que user n'est pas None
+        if user:  # ? Vérifie que user n'est pas None
             session['user_id'] = user['id']
             session['username'] = username
             session['est_admin'] = bool(user['est_admin'])
@@ -312,7 +333,6 @@ def login():
             flash("Nom d'utilisateur ou mot de passe incorrect.", "danger")
             return render_template('login.html')
     return render_template('login.html')
-
 
 @app.route('/logout')
 def logout():
@@ -349,7 +369,7 @@ def edit_procedure(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ✅ Récupérer la procédure avec les bonnes colonnes
+    # ? Récupérer la procédure avec les bonnes colonnes
     cursor.execute("""
         SELECT id, titre, mots_cles, description, reference_ticket, base_donnees, 
                protocole_resolution, protocole_verification, 
@@ -368,8 +388,8 @@ def edit_procedure(id):
         protocole_verification = request.form['protocole_verification']
         applications = request.form.get('application_id', '')
 
-        # ✅ S'assurer que le statut est toujours défini et ne peut pas être NULL
-        ancien_statut = procedure[11] if procedure[11] else "À valider"
+        # ? S'assurer que le statut est toujours défini et ne peut pas être NULL
+        ancien_statut = procedure['statut'] if procedure['statut'] else "À valider"
         nouveau_statut = "À valider" if ancien_statut in ["Rejetée", "Validée", "À vérifier", None] else ancien_statut
 
         cursor.execute("""
@@ -379,14 +399,14 @@ def edit_procedure(id):
             WHERE id=%s
         """, (titre, mots_cles, description, reference_ticket, base_donnees, protocole_resolution, protocole_verification, nouveau_statut, id))
 
-        # ✅ Vérification et insertion des applications sélectionnées
+        # ? Vérification et insertion des applications sélectionnées
         cursor.execute("SELECT application_id FROM procedure_applications WHERE procedure_id = %s", (id,))
-        current_applications = {str(row[0]) for row in cursor.fetchall()}  # Convertir en set
+        current_applications = {str(row["application_id"]) for row in cursor.fetchall()}  # Correction
 
         if applications:
             applications_list = set(applications.split(","))  # Convertir en set pour éviter les doublons
 
-            # ✅ Ajouter uniquement les nouvelles applications
+            # ? Ajouter uniquement les nouvelles applications
             new_applications = applications_list - current_applications
             for app_id in new_applications:
                 if app_id.strip():  # Vérifier que l’ID n'est pas vide
@@ -411,10 +431,15 @@ def edit_procedure(id):
     cursor.close()
     conn.close()
 
+    # Construction du dictionnaire couleurs_dict avant le render_template
+    couleurs_dict = {str(app['id']): app['couleur'] for app in applications}
+
     return render_template('edit_procedure.html',
                            procedure=procedure,
                            applications=applications,
-                           applications_associees=applications_associees)
+                           applications_associees=applications_associees,
+                           couleurs_dict=couleurs_dict)
+
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_procedure():
@@ -428,22 +453,49 @@ def add_procedure():
         mots_cles = request.form.get('mots_cles', '')
         titre = request.form.get('titre', '')
         description = request.form.get('description', '')
+        protocole_resolution = request.form.get('protocole_resolution', '')
+        protocole_verification = request.form.get('protocole_verification', '')
+        acteur = request.form.get('acteur', '')
+        verificateur = request.form.get('verificateur', '')
         base_donnees = request.form.get('base_donnees', '')
+        reference_ticket = request.form.get('reference_ticket', '')
         utilisateur = session.get('username')
-        applications = request.form.get('application_id', '')  # ✅ Récupérer les applications sélectionnées
 
-        # Insérer la procédure
+        # Dates de validation et expiration automatiques
+        date_validation = datetime.now()
+        date_expiration = date_validation + timedelta(days=90)
+
+        # Gestion des pièces jointes
+        fichiers_noms = []
+        if 'pieces_jointes[]' in request.files:
+            for file in request.files.getlist('pieces_jointes[]'):
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    unique_filename = str(uuid.uuid4()) + '_' + filename
+                    upload_file_to_ftp(file.stream, unique_filename)
+                    fichiers_noms.append(unique_filename)
+
+        pieces_jointes_str = ';'.join(fichiers_noms) if fichiers_noms else ''
+
+        # Insertion de la procédure complète
         cursor.execute("""
-            INSERT INTO procedures (mots_cles, titre, description, base_donnees, utilisateur) 
-            VALUES (%s, %s, %s, %s, %s)
-        """, (mots_cles, titre, description, base_donnees, utilisateur))
+            INSERT INTO procedures (
+                mots_cles, titre, description, protocole_resolution, protocole_verification,
+                acteur, verificateur, base_donnees, reference_ticket,
+                utilisateur, date_validation, date_expiration, pieces_jointes
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            mots_cles, titre, description, protocole_resolution, protocole_verification,
+            acteur, verificateur, base_donnees, reference_ticket,
+            utilisateur, date_validation, date_expiration, pieces_jointes_str
+        ))
+
         procedure_id = cursor.lastrowid
 
-        # Associer les applications sélectionnées à la procédure
-        if applications:
-            for app_id in applications.split(","):
-                cursor.execute("INSERT INTO procedure_applications (procedure_id, application_id) VALUES (%s, %s)",
-                               (procedure_id, app_id))
+        # Applications impactées
+        application_ids = request.form.getlist('application_id[]')
+        for app_id in application_ids:
+            cursor.execute("INSERT INTO procedure_applications (procedure_id, application_id) VALUES (%s, %s)", (procedure_id, app_id))
 
         conn.commit()
         cursor.close()
@@ -451,13 +503,15 @@ def add_procedure():
 
         return redirect(url_for('home'))
 
-    cursor.execute("SELECT * FROM applications")
+    # GET → chargement du formulaire
+    cursor.execute("SELECT id, nom, couleur FROM applications")
     applications = cursor.fetchall()
-
     cursor.close()
     conn.close()
 
-    return render_template('add_procedure.html', applications=applications)
+    couleurs_dict = {str(app['id']): app['couleur'] for app in applications}
+
+    return render_template('add_procedure.html', applications=applications, couleurs_dict=couleurs_dict)
 
 @app.route('/home/devlog/FichiersWiki/<path:filename>')
 def download_file(filename):
@@ -472,7 +526,6 @@ def download_file(filename):
 def open_file(file_path):
     return redirect(f'ftp://{FTP_HOST}{FTP_UPLOAD_DIR}/{file_path}')
 
-
 import uuid
 from flask import request, url_for, jsonify
 import os
@@ -480,28 +533,28 @@ import os
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
-    print("🔄 Requête reçue pour l'upload d'image...")
-
     if 'upload' not in request.files:
-        print("❌ Aucun fichier reçu !")
-        return jsonify({'success': False, 'error': 'Aucun fichier envoyé'})
+        return jsonify({'uploaded': False, 'error': {'message': 'Aucun fichier envoyé'}})
 
     file = request.files['upload']
-
     if file.filename == '':
-        print("❌ Nom de fichier invalide !")
-        return jsonify({'success': False, 'error': 'Nom de fichier invalide'})
+        return jsonify({'uploaded': False, 'error': {'message': 'Nom de fichier invalide'}})
 
-    filename = str(uuid.uuid4()) + "_" + file.filename
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    if not allowed_file(file.filename):
+        return jsonify({'uploaded': False, 'error': {'message': 'Extension non autorisée'}})
 
-    file.save(file_path)
+    filename = str(uuid.uuid4()) + "_" + secure_filename(file.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-    file_url = url_for('serve_uploaded_images', filename=filename, _external=True)
-
-    print(f"✅ Image enregistrée et servie à : {file_url}")
-
-    return jsonify({"success": True, "url": file_url})
+    try:
+        file.save(file_path)
+        file_url = url_for('serve_uploaded_images', filename=filename, _external=True)
+        return jsonify({
+            "uploaded": True,
+            "url": file_url
+        })
+    except Exception as e:
+        return jsonify({'uploaded': False, 'error': {'message': str(e)}})
 
 
 @app.route('/serve_image/<path:filename>')
@@ -514,7 +567,7 @@ def configuration():
         return redirect(url_for('login', next=request.url))  # Redirige vers login et garde l'URL en mémoire
 
     if not is_admin():
-        flash("❌ Accès refusé : Vous devez être administrateur pour accéder à cette page.", "danger")
+        flash("? Accès refusé : Vous devez être administrateur pour accéder à cette page.", "danger")
         return redirect(url_for('home'))
 
     conn = get_db_connection()
@@ -538,7 +591,6 @@ def configuration():
     conn.close()
 
     return render_template('configuration.html', applications=applications, services=services, users=users)
-
 
 @app.route('/update_application/<int:app_id>', methods=['POST'])
 def update_application(app_id):
@@ -590,7 +642,6 @@ def update_user_service(user_id):
 
     return redirect(url_for('configuration'))
 
-
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 def delete_user(user_id):
     if 'user_id' not in session:
@@ -622,7 +673,6 @@ def add_service():
 
     return redirect(url_for('configuration'))
 
-
 @app.route('/update_service/<int:service_id>', methods=['POST'])
 def update_service(service_id):
     if 'user_id' not in session or not is_admin():
@@ -639,7 +689,6 @@ def update_service(service_id):
         conn.close()
 
     return redirect(url_for('configuration'))
-
 
 @app.route('/delete_service/<int:service_id>', methods=['POST'])
 def delete_service(service_id):
@@ -671,7 +720,6 @@ def update_user_admin(user_id):
 
     return redirect(url_for('configuration'))
 
-
 @app.route('/validate_procedure/<int:id>', methods=['POST'])
 def validate_procedure(id):
     if 'user_id' not in session or not session.get("est_moderateur"):
@@ -685,12 +733,12 @@ def validate_procedure(id):
     conn.close()
 
     flash("La procédure a été validée avec succès.", "success")
-    return redirect(url_for('home'))  # ✅ Retourner à `home` au lieu de `gestion_a_verifier`
+    return redirect(url_for('home'))  # ? Retourner à `home` au lieu de `gestion_a_verifier`
 
 @app.route('/soft_delete/<int:id>', methods=['POST'])
 def soft_delete(id):
     if 'user_id' not in session or not is_admin():
-        flash("❌ Accès refusé : Vous devez être administrateur pour supprimer une procédure.", "danger")
+        flash("? Accès refusé : Vous devez être administrateur pour supprimer une procédure.", "danger")
         return redirect(url_for('home'))
 
     conn = get_db_connection()
@@ -700,7 +748,7 @@ def soft_delete(id):
     cursor.close()
     conn.close()
 
-    flash("🚮 Procédure supprimée (marquée comme rayée).", "info")
+    flash("?? Procédure supprimée (marquée comme rayée).", "info")
     return redirect(url_for('home'))
 
 @app.route('/gestion_a_verifier')
@@ -749,12 +797,12 @@ def reject_procedure(id):
     conn.close()
 
     flash("La procédure a été rejetée.", "danger")
-    return redirect(url_for('home'))  # ✅ Retourner à `home` au lieu de `gestion_a_verifier`
+    return redirect(url_for('home'))  # ? Retourner à `home` au lieu de `gestion_a_verifier`
 
 @app.route('/correct_procedure/<int:id>', methods=['POST'])
 def correct_procedure(id):
     if 'user_id' not in session:
-        flash("❌ Accès refusé.", "danger")
+        flash("? Accès refusé.", "danger")
         return redirect(url_for('home'))
 
     conn = get_db_connection()
@@ -765,14 +813,14 @@ def correct_procedure(id):
     utilisateur = cursor.fetchone()
 
     if utilisateur and utilisateur[0] == session.get("username"):
-        # ✅ Mettre la procédure à "À valider"
+        # ? Mettre la procédure à "À valider"
         cursor.execute("UPDATE procedures SET statut = 'À valider' WHERE id = %s", (id,))
         conn.commit()
 
     cursor.close()
     conn.close()
 
-    flash("🔄 La procédure a été corrigée et est de nouveau en attente de validation.", "info")
+    flash("?? La procédure a été corrigée et est de nouveau en attente de validation.", "info")
     return redirect(url_for('home'))
 
 @app.route('/deleted_procedures')
@@ -783,7 +831,7 @@ def deleted_procedures():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ✅ Récupérer uniquement les procédures supprimées
+    # ? Récupérer uniquement les procédures supprimées
     cursor.execute("""
         SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, 
                GROUP_CONCAT(a.nom SEPARATOR ', ') AS applications, 
@@ -809,25 +857,40 @@ def gestion_procedures_a_valider():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, titre, description, statut FROM procedures WHERE statut = 'À valider'")
+    cursor.execute("""
+        SELECT p.id, 
+               p.titre, 
+               p.description, 
+               p.mots_cles, 
+               p.reference_ticket, 
+               COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications, 
+               COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs, 
+               p.statut, 
+               p.utilisateur
+        FROM procedures p
+        LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
+        LEFT JOIN applications a ON pa.application_id = a.id
+        WHERE p.statut = 'À valider'
+        GROUP BY p.id
+        """)
     procedures_a_valider = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template('gestion_procedures_a_valider.html', procedures=procedures_a_valider)
+    return render_template('gestion_a_verifier.html', procedures=procedures_a_valider)
 
 
 @app.route('/like/<int:id>', methods=['POST'])
 def like_procedure(id):
     if 'username' not in session:
-        return redirect(url_for('login'))  # ✅ Rediriger si non connecté
+        return redirect(url_for('login'))  # ? Rediriger si non connecté
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # ✅ Vérifier si l'utilisateur a déjà voté
+        # ? Vérifier si l'utilisateur a déjà voté
         cursor.execute(
             "SELECT * FROM votes WHERE procedure_id = %s AND utilisateur = %s",
             (id, session['username'])
@@ -835,35 +898,32 @@ def like_procedure(id):
         existing_vote = cursor.fetchone()
 
         if existing_vote:
-            print(f"⚠️ DEBUG - Vote déjà existant pour ID: {id} par {session['username']}")
+            print(f"?? DEBUG - Vote déjà existant pour ID: {id} par {session['username']}")
         else:
-            # ✅ Ajouter le vote si pas encore voté
+            # ? Ajouter le vote si pas encore voté
             cursor.execute(
                 "INSERT INTO votes (procedure_id, vote_type, utilisateur) VALUES (%s, 'like', %s)",
                 (id, session['username'])
             )
             conn.commit()
-            print(f"✅ DEBUG - Like ajouté pour ID: {id} par {session['username']}")
-
     except MySQLdb.IntegrityError as e:
-        print(f"❌ ERREUR SQL - {e}")  # ✅ Debug si erreur
+        print(f"? ERREUR SQL - {e}")  # ? Debug si erreur
     finally:
         cursor.close()
         conn.close()
 
     return redirect(url_for('home'))
 
-
 @app.route('/dislike/<int:id>', methods=['POST'])
 def dislike_procedure(id):
     if 'username' not in session:
-        return redirect(url_for('login'))  # ✅ Rediriger si non connecté
+        return redirect(url_for('login'))  # ? Rediriger si non connecté
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
-        # ✅ Vérifier si l'utilisateur a déjà voté
+        # ? Vérifier si l'utilisateur a déjà voté
         cursor.execute(
             "SELECT * FROM votes WHERE procedure_id = %s AND utilisateur = %s",
             (id, session['username'])
@@ -871,18 +931,18 @@ def dislike_procedure(id):
         existing_vote = cursor.fetchone()
 
         if existing_vote:
-            print(f"⚠️ DEBUG - Vote déjà existant pour ID: {id} par {session['username']}")
+            print(f"?? DEBUG - Vote déjà existant pour ID: {id} par {session['username']}")
         else:
-            # ✅ Ajouter le vote si pas encore voté
+            # ? Ajouter le vote si pas encore voté
             cursor.execute(
                 "INSERT INTO votes (procedure_id, vote_type, utilisateur) VALUES (%s, 'dislike', %s)",
                 (id, session['username'])
             )
             conn.commit()
-            print(f"✅ DEBUG - Dislike ajouté pour ID: {id} par {session['username']}")
+            print(f"? DEBUG - Dislike ajouté pour ID: {id} par {session['username']}")
 
     except MySQLdb.IntegrityError as e:
-        print(f"❌ ERREUR SQL - {e}")  # ✅ Debug si erreur
+        print(f"? ERREUR SQL - {e}")  # ? Debug si erreur
     finally:
         cursor.close()
         conn.close()
@@ -915,36 +975,36 @@ def vote_procedure(id, vote_type):
         if existing_vote:
             existing_vote_type = existing_vote['vote_type']
             if existing_vote_type == vote_type:
-                # ✅ Si l'utilisateur clique à nouveau sur le même vote → Supprimer le vote
+                # ? Si l'utilisateur clique à nouveau sur le même vote ? Supprimer le vote
                 cursor.execute(
                     "DELETE FROM votes WHERE procedure_id = %s AND utilisateur = %s",
                     (id, session['username'])
                 )
                 conn.commit()
-                message = f"✅ Vote supprimé pour ID: {id} ({vote_type})"
+                message = f"? Vote supprimé pour ID: {id} ({vote_type})"
                 vote_status = None
             else:
-                # ✅ Si l'utilisateur change de vote → Mettre à jour le vote
+                # ? Si l'utilisateur change de vote ? Mettre à jour le vote
                 cursor.execute(
                     "UPDATE votes SET vote_type = %s WHERE procedure_id = %s AND utilisateur = %s",
                     (vote_type, id, session['username'])
                 )
                 conn.commit()
-                message = f"✅ Vote mis à jour pour ID: {id} ({vote_type})"
+                message = f"? Vote mis à jour pour ID: {id} ({vote_type})"
                 vote_status = vote_type
         else:
-            # ✅ Si l'utilisateur n'a jamais voté → Ajouter un vote
+            # ? Si l'utilisateur n'a jamais voté ? Ajouter un vote
             cursor.execute(
                 "INSERT INTO votes (procedure_id, vote_type, utilisateur) VALUES (%s, %s, %s)",
                 (id, vote_type, session['username'])
             )
             conn.commit()
-            message = f"✅ Vote ajouté pour ID: {id} ({vote_type})"
+            message = f"? Vote ajouté pour ID: {id} ({vote_type})"
             vote_status = vote_type
 
         print(message)
 
-        # ✅ Récupérer le nombre de likes/dislikes après l'opération
+        # ? Récupérer le nombre de likes/dislikes après l'opération
         cursor.execute(
             "SELECT "
             "(SELECT COUNT(*) FROM votes WHERE procedure_id = %s AND vote_type = 'like') AS likes, "
@@ -956,7 +1016,7 @@ def vote_procedure(id, vote_type):
         return jsonify({'success': True, 'likes': result['likes'], 'dislikes': result['dislikes'], 'vote_status': vote_status})
 
     except MySQLdb.IntegrityError as e:
-        print(f"❌ ERREUR SQL - {e}")
+        print(f"? ERREUR SQL - {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
     finally:
@@ -964,4 +1024,4 @@ def vote_procedure(id, vote_type):
         conn.close()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

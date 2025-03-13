@@ -1,0 +1,21 @@
+/* theme-toggle.css */
+#theme-toggle-container {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    z-index: 9999;
+}
+
+#toggle-theme-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #000;
+    padding: 0.2em 0.4em;
+    transition: color 0.3s ease;
+}
+
+.dark-mode #toggle-theme-btn {
+    color: #fff;
+}
