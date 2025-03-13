@@ -12,11 +12,13 @@ from werkzeug.utils import secure_filename
 from markupsafe import Markup
 import MySQLdb.cursors
 
+logging.getLogger('MARKDOWN').setLevel(logging.WARNING)
+
 # backend
 app = Flask(__name__)
 
 # ? Activer le logging pour voir les routes disponibles
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 # ? Afficher toutes les routes enregistrées dans Flask
 for rule in app.url_map.iter_rules():
@@ -291,6 +293,13 @@ def home():
         procedures_a_corriger_row = [0]
     procedures_a_corriger = int(procedures_a_corriger_row['COUNT(*)']) if procedures_a_corriger_row else 0
 
+    # Récupérer le nombre de procédure à vérifier pour le vérificateur
+    cursor.execute("""
+        SELECT COUNT(*) FROM procedures 
+        WHERE verificateur = %s AND statut = 'À vérifier'
+    """, (session['username'],))
+    procedures_a_verifier = cursor.fetchone()['COUNT(*)']
+
     cursor.close()
     conn.close()
 
@@ -303,7 +312,8 @@ def home():
         search_statut=search_statut,
         order_by=order_by,
         procedures_a_valider=procedures_a_valider,
-        procedures_a_corriger=procedures_a_corriger
+        procedures_a_corriger=procedures_a_corriger,
+        procedures_a_verifier=procedures_a_verifier
     )
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -506,12 +516,24 @@ def add_procedure():
     # GET → chargement du formulaire
     cursor.execute("SELECT id, nom, couleur FROM applications")
     applications = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT u.utilisateur FROM utilisateurs u
+        JOIN services s ON u.service_id = s.id
+        WHERE s.nom = 'direction' OR s.id = (SELECT service_id FROM utilisateurs WHERE id = %s)
+    """, (session['user_id'],))
+    verificateurs = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
     couleurs_dict = {str(app['id']): app['couleur'] for app in applications}
 
-    return render_template('add_procedure.html', applications=applications, couleurs_dict=couleurs_dict)
+    return render_template('add_procedure.html',
+                               applications=applications,
+                               couleurs_dict=couleurs_dict,
+                               verificateurs=verificateurs
+                           )
 
 @app.route('/home/devlog/FichiersWiki/<path:filename>')
 def download_file(filename):

@@ -48,6 +48,12 @@
                 <span>⚠️ <strong>{{ procedures_a_corriger }}</strong> procédures à corriger.</span>
             </div>
         {% endif %}
+        {% if procedures_a_verifier > 0 %}
+            <div class="alert alert-warning">
+                <strong>{{ procedures_a_verifier }}</strong> procédures à vérifier vous sont attribuées.
+                <a href="{{ url_for('gestion_a_verifier') }}" class="btn btn-sm btn-warning">Voir</a>
+            </div>
+        {% endif %}
     </div>
 
     <!-- ? Filtre par application et par mots clés-->

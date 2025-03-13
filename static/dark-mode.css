@@ -212,3 +212,7 @@ body.dark-mode {
     color: white !important;
     border-color: #dc3545 !important;
 }
+.dark-mode .ck.ck-editor__editable_inline {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}

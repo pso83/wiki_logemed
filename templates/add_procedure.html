@@ -95,7 +95,6 @@
                 ('Protocole de Résolution', 'protocole_resolution', 'textarea'),
                 ('Protocole de Vérification', 'protocole_verification', 'textarea'),
                 ('Acteur', 'acteur', 'text'),
-                ('Vérificateur', 'verificateur', 'text'),
                 ('Base de Données Impactée', 'base_donnees', 'text'),
                 ('Référence Ticket', 'reference_ticket', 'text')
             ] %}
@@ -113,6 +112,20 @@
             </div>
             {% set section_index = section_index + 1 %}
             {% endfor %}
+
+            <!-- Champ Vérificateur (combo spécifique) -->
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Vérificateur</label>
+                    <select class="form-select" name="verificateur" required>
+                        <option value="">Sélectionner un vérificateur</option>
+                        {% for user in verificateurs %}
+                            <option value="{{ user.utilisateur }}">{{ user.utilisateur }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
 
             <!-- Applications impactées -->
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">

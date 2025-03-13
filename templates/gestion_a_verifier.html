@@ -73,6 +73,11 @@
                         <form method="POST" action="{{ url_for('reject_procedure', id=procedure['id']) }}" style="display:inline;">
                             <button type="submit" class="btn btn-danger btn-sm">Rejeter</button>
                         </form>
+                        {% if procedure['statut'] == 'À vérifier' and session['username'] == procedure['verificateur'] %}
+                        <form method="POST" action="{{ url_for('validate_procedure', id=procedure['id']) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-sm">Vérifier</button>
+                        </form>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
