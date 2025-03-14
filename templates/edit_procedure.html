@@ -75,6 +75,7 @@
             if (input) input.remove();
         }
     </script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 </head>
 <body class="bg-light">
 {% include 'theme_toggle.html' %}
@@ -110,7 +111,7 @@
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
                 <div class="card-body">
                     <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Description</label>
-                    <textarea class="form-control" name="description">{{ procedure["description"] }}</textarea>
+                    <textarea class="form-control" name="description" id="description">{{ procedure['description'] }}</textarea>
                 </div>
             </div>
             {% set section_index = section_index + 1 %}
@@ -138,6 +139,7 @@
                     </div>
                 </div>
             </div>
+
             {% set section_index = section_index + 1 %}
 
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
@@ -152,18 +154,17 @@
                     <input type="text" class="form-control" name="verificateur" value="{{ procedure['verificateur'] }}">
                 </div>
             </div>
-
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
                 <div class="card-body">
                     <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Résolution</label>
-                    <textarea class="form-control" name="protocole_resolution">{{ procedure['protocole_resolution'] }}</textarea>
+                    <textarea class="form-control" name="protocole_resolution" id="protocole_resolution">{{ procedure['protocole_resolution'] }}</textarea>
                 </div>
             </div>
 
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
                 <div class="card-body">
                     <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Vérification</label>
-                    <textarea class="form-control" name="protocole_verification">{{ procedure['protocole_verification'] }}</textarea>
+                    <textarea class="form-control" name="protocole_verification" id="protocole_verification">{{ procedure['protocole_verification'] }}</textarea>
                 </div>
             </div>
 
@@ -195,6 +196,21 @@
         </form>
     </div>
 </div>
+<script>
+    const champsCKEditor = ['description', 'protocole_resolution', 'protocole_verification'];
+    champsCKEditor.forEach(fieldId => {
+        const textarea = document.getElementById(fieldId);
+        if (textarea) {
+            ClassicEditor.create(textarea, {
+                ckfinder: {
+                    uploadUrl: '{{ url_for("upload_image") }}'
+                }
+            }).catch(error => {
+                console.error("Erreur CKEditor sur", fieldId, error);
+            });
+        }
+    });
+</script>
 <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

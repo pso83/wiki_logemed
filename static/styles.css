@@ -237,3 +237,11 @@ body {
     overflow-x: auto;
     margin-top: 1em;
 }
+.markdown-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px auto;
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+}

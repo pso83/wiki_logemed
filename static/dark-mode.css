@@ -216,3 +216,17 @@ body.dark-mode {
     background-color: #2a2a2a !important;
     color: #ffffff !important;
 }
+.markdown-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+.markdown-content img {
+    max-width: 100%;
+    max-height: 400px; /* ou ce que tu veux comme limite visuelle */
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+}
