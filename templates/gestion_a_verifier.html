@@ -70,14 +70,31 @@
                         <form method="POST" action="{{ url_for('validate_procedure', id=procedure['id']) }}" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Valider</button>
                         </form>
-                        <form method="POST" action="{{ url_for('reject_procedure', id=procedure['id']) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm">Rejeter</button>
-                        </form>
                         {% if procedure['statut'] == 'À vérifier' and session['username'] == procedure['verificateur'] %}
-                        <form method="POST" action="{{ url_for('validate_procedure', id=procedure['id']) }}" style="display:inline;">
+                        <form method="POST" action="{{ url_for('verify_procedure', id=procedure['id']) }}" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Vérifier</button>
                         </form>
-                        {% endif %}
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#motifRejetVerif-{{ procedure.id }}">Rejeter</button>
+                        <div class="modal fade" id="motifRejetVerif-{{ procedure.id }}" tabindex="-1" aria-labelledby="motifRejetLabel-{{ procedure.id }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <form method="POST" action="{{ url_for('reject_procedure_verificateur', id=procedure.id) }}">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="motifRejetLabel-{{ procedure.id }}">Motif de rejet</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <textarea name="motif_rejet" class="form-control" placeholder="Indiquez un motif de rejet..." required></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="submit" class="btn btn-danger">Rejeter</button>
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                    {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -87,6 +104,7 @@
             <a href="/" class="btn btn-secondary">Retour à l'accueil</a>
         </div>
     </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>

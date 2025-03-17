@@ -489,12 +489,12 @@ def add_procedure():
             INSERT INTO procedures (
                 mots_cles, titre, description, protocole_resolution, protocole_verification,
                 acteur, verificateur, base_donnees, reference_ticket,
-                utilisateur, date_validation, date_expiration, pieces_jointes
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                utilisateur, date_validation, date_expiration, pieces_jointes, statut
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             mots_cles, titre, description, protocole_resolution, protocole_verification,
             acteur, verificateur, base_donnees, reference_ticket,
-            utilisateur, date_validation, date_expiration, pieces_jointes_str
+            utilisateur, date_validation, date_expiration, pieces_jointes_str, "À vérifier"
         ))
 
         procedure_id = cursor.lastrowid
@@ -811,22 +811,19 @@ def gestion_a_verifier():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT p.id, 
-               p.titre, 
-               p.description, 
-               p.mots_cles, 
-               p.reference_ticket, 
+    query = """
+        SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, 
                COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications, 
                COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs, 
-               p.statut, 
-               p.utilisateur
+               p.statut, p.utilisateur, p.verificateur
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
-        WHERE p.statut IN ('À vérifier', 'À valider')
+        WHERE p.statut = 'À vérifier' AND p.verificateur = %s
         GROUP BY p.id
-    """)
+    """
+    cursor.execute(query, (session['username'],))
+
     procedures = cursor.fetchall()
 
     cursor.close()
