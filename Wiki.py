@@ -483,7 +483,7 @@ def add_procedure():
                     fichiers_noms.append(unique_filename)
 
         pieces_jointes_str = ';'.join(fichiers_noms) if fichiers_noms else ''
-
+        # ajout pour pouvoir comit
         # Insertion de la procédure complète
         cursor.execute("""
             INSERT INTO procedures (
