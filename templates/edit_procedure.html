@@ -131,8 +131,7 @@
                         {% for app in applications_associees %}
                             <div class="d-flex align-items-center me-2 mb-2" id="app-wrapper-{{ app.id }}">
                                 <span class="badge p-2" style="background-color: {{ app.couleur }}; color: white;">{{ app.nom }}</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger ms-1" style="padding: 2px 6px; font-size: 0.8rem;"
-                                        onclick="removeApp('{{ app.id }}')">✖</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-1" style="padding: 2px 6px; font-size: 0.8rem;" onclick="removeApp('{{ app.id }}')">✖</button>
                                 <input type="hidden" name="application_id[]" value="{{ app.id }}" id="input-app-{{ app.id }}">
                             </div>
                         {% endfor %}

@@ -64,6 +64,7 @@
                                 <th>Nom</th>
                                 <th>Couleur</th>
                                 <th>Modifier</th>
+                                <th>Supprimer</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -77,6 +78,11 @@
                                     <form method="POST" action="{{ url_for('update_application', app_id=app['id']) }}">
                                         <input type="hidden" name="new_color" id="hidden_color_{{ app['id'] }}" value="{{ app['couleur'] }}">
                                         <button type="submit" class="btn btn-warning">Mettre à jour</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('delete_application', app_id=app['id']) }}" onsubmit="return confirm('❌ Supprimer cette application ? Cette action est irréversible.')">
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
                                     </form>
                                 </td>
                             </tr>
@@ -114,6 +120,35 @@
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary">Ajouter</button>
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function() {
+                                const form = document.querySelector('form[action="{{ url_for("add_user") }}"]');
+                                const inputUsername = document.getElementById('username');
+                                const selectService = document.getElementById('service');
+
+                                // Liste des utilisateurs existants (utilisateur + service_id)
+                                const existingUsers = [
+                                    {% for user in users %}
+                                        { username: "{{ user.utilisateur|lower }}", service: "{{ services | selectattr('nom', 'equalto', user.service)|map(attribute='id')|first or '' }}" },
+                                    {% endfor %}
+                                ];
+
+                                form.addEventListener("submit", function(e) {
+                                    const username = inputUsername.value.trim().toLowerCase();
+                                    const serviceId = selectService.value;
+
+                                    const duplicate = existingUsers.some(user =>
+                                        user.username === username && user.service === serviceId
+                                    );
+
+                                    if (duplicate) {
+                                        e.preventDefault();
+                                        alert("⚠️ Un utilisateur avec ce nom et ce service existe déjà !");
+                                        inputUsername.focus();
+                                    }
+                                });
+                            });
+                        </script>
                     </form>
                 </div>
                 <div class="card p-4">
@@ -124,6 +159,7 @@
                                 <th>Nom d'utilisateur</th>
                                 <th>Service</th>
                                 <th>Action</th>
+                                <th>Droits</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -132,15 +168,28 @@
                                 <td>{{ user['utilisateur'] }}</td>
                                 <td>{{ user['service'] if user['service'] else 'Non défini' }}</td>
                                 <td>
-                                    <form method="POST" action="{{ url_for('update_user_service', user_id=user['id']) }}">
-                                        <select name="service" class="form-select">
-                                            <option value="">Aucun</option>
+                                    <form method="POST" action="{{ url_for('update_user_service', user_id=user['id']) }}" onsubmit="return validateServiceSelection(this);">
+                                        <select name="service" class="form-select" required>
+                                            <option value="" disabled>Choisir un service</option>
                                             {% for service in services %}
-                                            <option value="{{ service['id'] }}" {% if service['nom'] == user['service'] %}selected{% endif %}>{{ service['nom'] }}</option>
+                                                <option value="{{ service['id'] }}" {% if service['nom'] == user['service'] %}selected{% endif %}>{{ service['nom'] }}</option>
                                             {% endfor %}
                                         </select>
                                         <button type="submit" class="btn btn-success mt-2">Modifier</button>
                                     </form>
+                                    <form method="POST" action="{{ url_for('delete_user', user_id=user['id']) }}" onsubmit="return confirm('❌ Supprimer cet utilisateur ? Cette action est irréversible.')">
+                                        <button type="submit" class="btn btn-danger mt-2">Supprimer</button>
+                                    </form>
+                                    <script>
+                                        function validateServiceSelection(form) {
+                                            const selectedService = form.querySelector('select[name="service"]').value;
+                                            if (!selectedService) {
+                                                alert("⚠️ Veuillez sélectionner un service.");
+                                                return false;
+                                            }
+                                            return true;
+                                        }
+                                    </script>
                                 </td>
                                 <td>
                                     <form method="POST" action="{{ url_for('update_user_admin', user_id=user['id']) }}">
@@ -201,5 +250,27 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const tabs = document.querySelectorAll("#configTabs .nav-link");
+
+    // 🔸 Au clic : sauvegarde l'ID de l'onglet actif
+    tabs.forEach(tab => {
+      tab.addEventListener("click", function () {
+        localStorage.setItem("activeConfigTab", this.getAttribute("id"));
+      });
+    });
+
+    // 🔸 À l'ouverture de la page : restaure l'onglet
+    const activeTabId = localStorage.getItem("activeConfigTab");
+    if (activeTabId) {
+      const activeTab = document.getElementById(activeTabId);
+      if (activeTab) {
+        new bootstrap.Tab(activeTab).show();
+      }
+    }
+  });
+</script>
+
 </body>
 </html>

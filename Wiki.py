@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file, abort, \
-    send_from_directory, flash, Response
+    send_from_directory, flash, Response, render_template_string
 import MySQLdb
 import uuid
 import os
@@ -396,7 +396,7 @@ def edit_procedure(id):
         base_donnees = request.form['base_donnees']
         protocole_resolution = request.form['protocole_resolution']
         protocole_verification = request.form['protocole_verification']
-        applications = request.form.get('application_id', '')
+        applications = request.form.getlist('application_id[]')
 
         # ? S'assurer que le statut est toujours défini et ne peut pas être NULL
         ancien_statut = procedure['statut'] if procedure['statut'] else "À valider"
@@ -410,17 +410,14 @@ def edit_procedure(id):
         """, (titre, mots_cles, description, reference_ticket, base_donnees, protocole_resolution, protocole_verification, nouveau_statut, id))
 
         # ? Vérification et insertion des applications sélectionnées
-        cursor.execute("SELECT application_id FROM procedure_applications WHERE procedure_id = %s", (id,))
-        current_applications = {str(row["application_id"]) for row in cursor.fetchall()}  # Correction
+        # ✅ Supprimer les anciennes associations
+        cursor.execute("DELETE FROM procedure_applications WHERE procedure_id = %s", (id,))
 
-        if applications:
-            applications_list = set(applications.split(","))  # Convertir en set pour éviter les doublons
-
-            # ? Ajouter uniquement les nouvelles applications
-            new_applications = applications_list - current_applications
-            for app_id in new_applications:
-                if app_id.strip():  # Vérifier que l’ID n'est pas vide
-                    cursor.execute("INSERT INTO procedure_applications (procedure_id, application_id) VALUES (%s, %s)", (id, app_id.strip()))
+        # ✅ Réinsérer les applications envoyées par le formulaire
+        for app_id in applications:
+            if app_id.strip():
+                cursor.execute("INSERT INTO procedure_applications (procedure_id, application_id) VALUES (%s, %s)",
+                               (id, app_id.strip()))
 
         conn.commit()
         cursor.close()
@@ -641,8 +638,24 @@ def add_user():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO utilisateurs (utilisateur, password, service_id) VALUES (%s, %s, %s)", (username, password, service_id if service_id else None))
-    conn.commit()
+
+    # 🔍 Vérifier si un utilisateur existe déjà avec le même nom et service
+    cursor.execute("""
+        SELECT COUNT(*) FROM utilisateurs 
+        WHERE utilisateur = %s AND service_id = %s
+    """, (username, service_id))
+    existing_user = cursor.fetchone()['COUNT(*)']
+
+    if existing_user > 0:
+        flash("⚠️ Un utilisateur avec ce nom et ce service existe déjà.", "warning")
+    else:
+        cursor.execute("""
+            INSERT INTO utilisateurs (utilisateur, password, service_id) 
+            VALUES (%s, %s, %s)
+        """, (username, password, service_id if service_id else None))
+        conn.commit()
+        flash("✅ Utilisateur ajouté avec succès.", "success")
+
     cursor.close()
     conn.close()
 
@@ -760,18 +773,34 @@ def validate_procedure(id):
 @app.route('/soft_delete/<int:id>', methods=['POST'])
 def soft_delete(id):
     if 'user_id' not in session or not is_admin():
-        flash("? Accès refusé : Vous devez être administrateur pour supprimer une procédure.", "danger")
+        flash("⚠️ Accès refusé : Vous devez être administrateur pour supprimer une procédure.", "danger")
         return redirect(url_for('home'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE procedures SET est_supprime = TRUE WHERE id = %s", (id,))
+    cursor.execute("UPDATE procedures SET est_supprime = TRUE, supprime_par = %s WHERE id = %s", (session['username'], id))
     conn.commit()
     cursor.close()
     conn.close()
 
-    flash("?? Procédure supprimée (marquée comme rayée).", "info")
+    flash("✅ Procédure marquée comme supprimée.", "info")
     return redirect(url_for('home'))
+
+@app.route('/restore_procedure/<int:id>', methods=['POST'])
+def restore_procedure(id):
+    if 'user_id' not in session or not is_admin():
+        flash("⚠️ Accès refusé : Vous devez être administrateur pour restaurer une procédure.", "danger")
+        return redirect(url_for('home'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE procedures SET est_supprime = FALSE, supprime_par = NULL WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    flash("✅ Procédure restaurée avec succès.", "success")
+    return redirect(url_for('deleted_procedures'))
 
 @app.route('/gestion_a_verifier')
 def gestion_a_verifier():
@@ -856,8 +885,8 @@ def deleted_procedures():
     # ? Récupérer uniquement les procédures supprimées
     cursor.execute("""
         SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, 
-               GROUP_CONCAT(a.nom SEPARATOR ', ') AS applications, 
-               p.statut, p.utilisateur
+           GROUP_CONCAT(a.nom SEPARATOR ', ') AS applications, 
+           p.supprime_par
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
@@ -901,7 +930,6 @@ def gestion_procedures_a_valider():
     conn.close()
 
     return render_template('gestion_a_verifier.html', procedures=procedures_a_valider)
-
 
 @app.route('/like/<int:id>', methods=['POST'])
 def like_procedure(id):
@@ -1044,6 +1072,159 @@ def vote_procedure(id, vote_type):
     finally:
         cursor.close()
         conn.close()
+
+@app.route('/delete_application/<int:app_id>', methods=['POST'])
+def delete_application(app_id):
+    if 'user_id' not in session or not is_admin():
+        flash("⚠️ Accès refusé : vous devez être administrateur.", "danger")
+        return redirect(url_for('configuration'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM applications WHERE id = %s", (app_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    flash("✅ Application supprimée avec succès.", "success")
+    return redirect(url_for('configuration'))
+
+import csv
+from io import StringIO
+
+@app.route('/export_deleted_procedures')
+def export_deleted_procedures():
+    if 'user_id' not in session or not is_admin():
+        flash("⚠️ Accès refusé", "danger")
+        return redirect(url_for('home'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT p.titre, p.mots_cles, p.description, p.reference_ticket, 
+               GROUP_CONCAT(a.nom SEPARATOR ', ') AS applications,
+               p.supprime_par
+        FROM procedures p
+        LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
+        LEFT JOIN applications a ON pa.application_id = a.id
+        WHERE p.est_supprime = 1
+        GROUP BY p.id
+    """)
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    # Création du fichier CSV en mémoire
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Titre", "Mots-Clés", "Description", "Ticket", "Applications", "Supprimé par"])
+    for row in rows:
+        writer.writerow([
+            row["titre"],
+            row["mots_cles"],
+            row["description"],
+            row["reference_ticket"],
+            row["applications"],
+            row["supprime_par"]
+        ])
+
+    output.seek(0)
+
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=procedures_supprimees.csv"}
+    )
+
+@app.route('/verify_procedure/<int:id>', methods=['POST'])
+def verify_procedure(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Vérifier que l'utilisateur est bien le vérificateur
+    cursor.execute("SELECT verificateur FROM procedures WHERE id = %s", (id,))
+    result = cursor.fetchone()
+    if result and result['verificateur'] == session['username']:
+        cursor.execute("UPDATE procedures SET statut = 'À valider' WHERE id = %s", (id,))
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+    flash("? Procédure vérifiée. En attente de validation par l'administrateur.", "success")
+    return redirect(url_for('home'))
+
+@app.route('/reject_procedure_verificateur/<int:id>', methods=['POST'])
+def reject_procedure_verificateur(id):
+    motif = request.form.get('motif_rejet', '')
+    if not motif:
+        flash("?? Veuillez indiquer un motif de rejet.", "danger")
+        return redirect(url_for('gestion_a_verifier'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE procedures SET statut = 'Rejetée' WHERE id = %s", (id,))
+    cursor.execute("INSERT INTO motif_rejet (procedure_id, auteur_rejet, motif, niveau) VALUES (%s, %s, %s, 'verificateur')",
+                   (id, session['username'], motif))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("? Procédure rejetée avec motif.", "danger")
+    return redirect(url_for('home'))
+
+@app.route('/admin_validate_procedure/<int:id>', methods=['POST'])
+def admin_validate_procedure(id):
+    if not is_admin():
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE procedures SET statut = 'Validée' WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("? Procédure validée.", "success")
+    return redirect(url_for('gestion_procedures_a_valider'))
+
+@app.route('/reject_procedure_admin/<int:id>', methods=['POST'])
+def reject_procedure_admin(id):
+    motif = request.form.get('motif_rejet', '')
+    if not motif:
+        flash("?? Veuillez indiquer un motif de rejet.", "danger")
+        return redirect(url_for('gestion_procedures_a_valider'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE procedures SET statut = 'Rejetée' WHERE id = %s", (id,))
+    cursor.execute("INSERT INTO motif_rejet (procedure_id, auteur_rejet, motif, niveau) VALUES (%s, %s, %s, 'admin')",
+                   (id, session['username'], motif))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("? Procédure rejetée avec motif.", "danger")
+    return redirect(url_for('home'))
+
+@app.route('/motif_rejet/<int:procedure_id>')
+def motif_rejet(procedure_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT motif, auteur_rejet, niveau, date_rejet FROM motif_rejet WHERE procedure_id = %s ORDER BY date_rejet DESC", (procedure_id,))
+    motifs = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    # Peut aussi être rendu dans une modale
+    return render_template_string("""
+    <ul>
+    {% for m in motifs %}
+        <li><strong>{{ m['niveau']|capitalize }}</strong> ({{ m['auteur_rejet'] }}) le {{ m['date_rejet'] }} :<br>{{ m['motif'] }}</li>
+    {% endfor %}
+    </ul>
+    """, motifs=motifs)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

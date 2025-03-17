@@ -49,13 +49,26 @@
             </div>
         {% endif %}
         {% if procedures_a_verifier > 0 %}
-            <div class="alert alert-warning">
-                <strong>{{ procedures_a_verifier }}</strong> procédures à vérifier vous sont attribuées.
-                <a href="{{ url_for('gestion_a_verifier') }}" class="btn btn-sm btn-warning">Voir</a>
-            </div>
+        <div class="alert alert-warning">
+            <strong>{{ procedures_a_verifier }}</strong> procédures à vérifier vous sont attribuées.
+            <a href="{{ url_for('gestion_a_verifier') }}" class="btn btn-sm btn-warning">Voir</a>
+        </div>
         {% endif %}
     </div>
-
+    <!-- ? Modale d'affichage du motif -->
+    <div class="modal fade" id="motifModalUser" tabindex="-1" aria-labelledby="motifModalUserLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="motifModalUserLabel">Motifs de rejet de vos procédures</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe src="{{ url_for('motif_rejet', procedure_id=0) }}" width="100%" height="300" style="border:none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- ? Filtre par application et par mots clés-->
     <form method="GET" action="/">
         <div class="row g-3 align-items-center mb-4">
@@ -253,7 +266,7 @@ setInterval(refreshAlerts, 10000);  // ? Rafraîchir les alertes toutes les 10 s
 <script>
     console.log("DEBUG - Nombre de procédures affichées :", document.querySelectorAll(".procedure-card").length);
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='theme-toggle.js') }}"></script>
 </body>
 </html>
