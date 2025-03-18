@@ -67,9 +67,6 @@
                     <td>{{ procedure['utilisateur'] }}</td>  <!-- ✅ Auteur -->
                     <td>
                         <a href="{{ url_for('view_procedure', id=procedure['id']) }}" class="btn btn-info btn-sm">Afficher</a>
-                        <form method="POST" action="{{ url_for('validate_procedure', id=procedure['id']) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-success btn-sm">Valider</button>
-                        </form>
                         {% if procedure['statut'] == 'À vérifier' and session['username'] == procedure['verificateur'] %}
                         <form method="POST" action="{{ url_for('verify_procedure', id=procedure['id']) }}" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Vérifier</button>

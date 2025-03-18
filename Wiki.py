@@ -589,11 +589,21 @@ def configuration():
         return redirect(url_for('login', next=request.url))  # Redirige vers login et garde l'URL en mémoire
 
     if not is_admin():
-        flash("? Accès refusé : Vous devez être administrateur pour accéder à cette page.", "danger")
+        flash("⚠️ Accès refusé : Vous devez être administrateur pour accéder à cette page.", "danger")
         return redirect(url_for('home'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    # ✅ Traitement de l'ajout d'une application
+    if request.method == 'POST' and request.form.get("app_name"):
+        app_name = request.form.get("app_name")
+        app_color = request.form.get("app_color", "#000000")
+
+        cursor.execute("INSERT INTO applications (nom, couleur) VALUES (%s, %s)", (app_name, app_color))
+        conn.commit()
+        flash("✅ Application ajoutée avec succès.", "success")
+        return redirect(url_for('configuration'))
 
     # Récupérer applications, services et utilisateurs
     cursor.execute("SELECT id, nom, couleur FROM applications")
