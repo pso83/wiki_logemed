@@ -269,6 +269,9 @@ def home():
 
     # ? Appliquer la mise en forme aux descriptions et protocoles
     for procedure in procedures:
+        cursor.execute("SELECT COUNT(*) as nb FROM motif_rejet WHERE procedure_id = %s", (procedure['id'],))
+        motif_count = cursor.fetchone()
+        procedure['a_un_motif'] = motif_count['nb'] > 0
         procedure['description'] = format_code_blocks(procedure['description']) if 'description' in procedure and \
                                                                                    procedure['description'] else ''
         procedure['protocole_resolution'] = format_code_blocks(
@@ -897,36 +900,30 @@ def deleted_procedures():
 
     return render_template('deleted_procedures.html', procedures=procedures)
 
-@app.route('/gestion_procedures_a_valider')
-def gestion_procedures_a_valider():
-    if 'user_id' not in session or not session.get("est_moderateur"):
+@app.route('/gestion_a_valider')
+def gestion_a_valider():
+    if 'user_id' not in session or not session.get("est_admin"):
         return redirect(url_for('login'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT p.id, 
-               p.titre, 
-               p.description, 
-               p.mots_cles, 
-               p.reference_ticket, 
-               COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications, 
-               COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs, 
-               p.statut, 
-               p.utilisateur
+        SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
+               COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications,
+               COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs,
+               p.statut, p.utilisateur
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
         WHERE p.statut = 'À valider'
         GROUP BY p.id
-        """)
-    procedures_a_valider = cursor.fetchall()
-
+    """)
+    procedures = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    return render_template('gestion_a_verifier.html', procedures=procedures_a_valider)
+    return render_template('gestion_a_valider.html', procedures=procedures)
 
 @app.route('/like/<int:id>', methods=['POST'])
 def like_procedure(id):
