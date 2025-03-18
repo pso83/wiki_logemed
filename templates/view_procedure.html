@@ -130,7 +130,7 @@
             {% endif %}
 
             <div class="text-center">
-                <a href="{{ url_for('home') }}" class="btn btn-secondary">Retour</a>
+                <a href="{{ request.referrer or url_for('home') }}" class="btn btn-secondary">Retour</a>
             </div>
         </div>
     </div>

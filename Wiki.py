@@ -760,7 +760,7 @@ def update_user_admin(user_id):
 
 @app.route('/validate_procedure/<int:id>', methods=['POST'])
 def validate_procedure(id):
-    if 'user_id' not in session or not session.get("est_moderateur"):
+    if 'user_id' not in session:
         return redirect(url_for('login'))
 
     conn = get_db_connection()
@@ -770,8 +770,8 @@ def validate_procedure(id):
     cursor.close()
     conn.close()
 
-    flash("La procédure a été validée avec succès.", "success")
-    return redirect(url_for('home'))  # ? Retourner à `home` au lieu de `gestion_a_verifier`
+    flash("✅ La procédure a été validée.", "success")
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/soft_delete/<int:id>', methods=['POST'])
 def soft_delete(id):
@@ -837,7 +837,7 @@ def gestion_a_verifier():
 
 @app.route('/reject_procedure/<int:id>', methods=['POST'])
 def reject_procedure(id):
-    if 'user_id' not in session or not session.get("est_moderateur"):
+    if 'user_id' not in session:
         return redirect(url_for('login'))
 
     conn = get_db_connection()
@@ -847,8 +847,8 @@ def reject_procedure(id):
     cursor.close()
     conn.close()
 
-    flash("La procédure a été rejetée.", "danger")
-    return redirect(url_for('home'))  # ? Retourner à `home` au lieu de `gestion_a_verifier`
+    flash("❌ La procédure a été rejetée.", "danger")
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/correct_procedure/<int:id>', methods=['POST'])
 def correct_procedure(id):
@@ -1167,7 +1167,7 @@ def reject_procedure_verificateur(id):
     cursor.close()
     conn.close()
     flash("? Procédure rejetée avec motif.", "danger")
-    return redirect(url_for('home'))
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/admin_validate_procedure/<int:id>', methods=['POST'])
 def admin_validate_procedure(id):
@@ -1181,14 +1181,14 @@ def admin_validate_procedure(id):
     cursor.close()
     conn.close()
     flash("? Procédure validée.", "success")
-    return redirect(url_for('gestion_procedures_a_valider'))
+    return redirect(url_for('gestion_a_valider'))
 
 @app.route('/reject_procedure_admin/<int:id>', methods=['POST'])
 def reject_procedure_admin(id):
     motif = request.form.get('motif_rejet', '')
     if not motif:
         flash("?? Veuillez indiquer un motif de rejet.", "danger")
-        return redirect(url_for('gestion_procedures_a_valider'))
+        return redirect(url_for('gestion_a_valider'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -1200,7 +1200,7 @@ def reject_procedure_admin(id):
     cursor.close()
     conn.close()
     flash("? Procédure rejetée avec motif.", "danger")
-    return redirect(url_for('home'))
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/motif_rejet/<int:procedure_id>')
 def motif_rejet(procedure_id):
