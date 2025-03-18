@@ -86,13 +86,9 @@ def is_admin():
 def is_moderateur():
     return session.get("est_moderateur", False) == True
 
-
-# ? Fonction améliorée pour reconnaître le code SQL et WinDev entre []
+# ✅ convertisseur markdown sans suppression des <p>
 def convertir_markdown(texte):
     if texte:
-        # 🔸 Nettoyage des balises <p>
-        texte = re.sub(r'</?p>', '', texte, flags=re.IGNORECASE)
-
         # 🔸 Bloc SQL multi-lignes
         texte = re.sub(r'\[SQL\](.*?)\[/SQL\]', r'<pre class="language-sql"><code>\1</code></pre>', texte, flags=re.DOTALL)
 
@@ -102,7 +98,7 @@ def convertir_markdown(texte):
         # 🔸 Bloc générique multi-lignes entre [ ]
         texte = re.sub(r'\[\s*([\s\S]*?)\s*\]', r'<pre class="language-generic"><code>\1</code></pre>', texte, flags=re.DOTALL)
 
-        # 🔸 Markdown général
+        # 🔸 Markdown général (conserve les paragraphes)
         texte_html = markdown.markdown(texte, extensions=["extra", "nl2br", "sane_lists"])
 
         return Markup(texte_html)
@@ -214,27 +210,29 @@ def home():
     params = []
     filters = []
 
-    # ✅ Vérification du type de recherche (avec "#" uniquement sur mots-clés, sans "#" sur tous les champs)
+    # ✅ Recherche combinée : #mot => mots_cles, mot => tous champs
     if search_keywords:
-        search_keywords = search_keywords.strip().lower()
+        search_words = search_keywords.strip().split()
+        motscles_keywords = [kw[1:].lower() for kw in search_words if kw.startswith("#")]
+        global_keywords = [kw.lower() for kw in search_words if not kw.startswith("#")]
 
-        if search_keywords.startswith("#"):
-            # ✅ Recherche uniquement dans "mots_cles" avec LIKE plus souple
-            keyword_conditions = " OR ".join(
-                ["LOWER(p.mots_cles) LIKE %s" for kw in search_keywords.split("#") if kw.strip()])
-            filters.append(f"({keyword_conditions})")
-            params.extend([f"%{kw.strip()}%" for kw in search_keywords.split("#") if kw.strip()])
-        else:
-            # ✅ Recherche globale dans plusieurs champs
-            keyword_conditions = " OR ".join([
-                "LOWER(p.mots_cles) LIKE %s",
-                "LOWER(p.titre) LIKE %s",
-                "LOWER(p.description) LIKE %s",
-                "LOWER(p.protocole_resolution) LIKE %s",
-                "LOWER(p.protocole_verification) LIKE %s"
-            ])
-            filters.append(f"({keyword_conditions})")
-            params.extend([f"%{search_keywords}%" for _ in range(5)])
+        if motscles_keywords:
+            motscles_conditions = " OR ".join(["LOWER(p.mots_cles) LIKE %s" for _ in motscles_keywords])
+            filters.append(f"({motscles_conditions})")
+            params.extend([f"%{kw}%" for kw in motscles_keywords])
+
+        if global_keywords:
+            global_conditions = []
+            for kw in global_keywords:
+                global_conditions.append("(" + " OR ".join([
+                    "LOWER(p.mots_cles) LIKE %s",
+                    "LOWER(p.titre) LIKE %s",
+                    "LOWER(p.description) LIKE %s",
+                    "LOWER(p.protocole_resolution) LIKE %s",
+                    "LOWER(p.protocole_verification) LIKE %s"
+                ]) + ")")
+                params.extend([f"%{kw}%"] * 5)
+            filters.append(" AND ".join(global_conditions))
 
     if search_application and search_application.isdigit():
         filters.append(
@@ -831,8 +829,9 @@ def gestion_a_verifier():
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
-        WHERE p.statut = 'À vérifier' AND p.verificateur = %s
-        GROUP BY p.id
+        WHERE p.statut = 'À vérifier'
+        AND p.verificateur = %s
+        AND (p.est_supprime = 0 OR p.est_supprime IS NULL)
     """
     cursor.execute(query, (session['username'],))
 
@@ -926,7 +925,7 @@ def gestion_a_valider():
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
         WHERE p.statut = 'À valider'
-        GROUP BY p.id
+        AND (p.est_supprime = 0 OR p.est_supprime IS NULL)
     """)
     procedures = cursor.fetchall()
     cursor.close()

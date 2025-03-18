@@ -1,20 +1,21 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script>
       // Applique le mode sombre au plus tôt
       if (localStorage.getItem("dark-mode") === "true") {
         document.documentElement.classList.add("dark-mode");
       }
     </script>
-    <title>Modifier la Procédure</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme-toggle.css') }}">
-    <script>
+<title>Modifier la Procédure</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"/>
+<link href="{{ url_for('static', filename='dark-mode.css') }}" rel="stylesheet"/>
+<link href="{{ url_for('static', filename='theme-toggle.css') }}" rel="stylesheet"/>
+<script>
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll("textarea").forEach(textarea => {
                 textarea.style.height = textarea.scrollHeight + "px";
@@ -67,7 +68,7 @@
             });
         });
     </script>
-    <script>
+<script>
         function removeApp(appId) {
             const wrapper = document.getElementById("app-wrapper-" + appId);
             const input = document.getElementById("input-app-" + appId);
@@ -75,15 +76,15 @@
             if (input) input.remove();
         }
     </script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 </head>
 <body class="bg-light">
 {% include 'theme_toggle.html' %}
 
 <div class="container mt-5">
-    <div class="card shadow-lg p-4">
-        <h1 class="text-center mb-4">Modifier la Procédure</h1>
-        <form method="POST" action="{{ url_for('edit_procedure', id=procedure['id']) }}" enctype="multipart/form-data">
+<div class="card shadow-lg p-4">
+<h1 class="text-center mb-4">Modifier la Procédure</h1>
+<form action="{{ url_for('edit_procedure', id=procedure['id']) }}" enctype="multipart/form-data" method="POST">
             {% set couleurs = procedure["couleurs"].split(', ') if procedure["couleurs"] else ['#5D5D5D'] %}
             {% set couleurs_dict = {} %}
             {% for app in applications %}
@@ -93,107 +94,115 @@
             {% set section_index = 0 %}
 
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Titre</label>
-                    <input type="text" class="form-control" name="titre" value="{{ procedure['titre'] }}" required>
-                </div>
-            </div>
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Titre</label>
+<input class="form-control" name="titre" required="" type="text" value="{{ procedure['titre'] }}"/>
+</div>
+</div>
             {% set section_index = section_index + 1 %}
 
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Mots-clés</label>
-                    <input type="text" class="form-control" name="mots_cles" value="{{ procedure['mots_cles'] }}">
-                </div>
-            </div>
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Mots-clés</label>
+<input class="form-control" name="mots_cles" type="text" value="{{ procedure['mots_cles'] }}"/>
+</div>
+</div>
             {% set section_index = section_index + 1 %}
 
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Description</label>
-                    <textarea class="form-control" name="description" id="description">{{ procedure['description'] }}</textarea>
-                </div>
-            </div>
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Description</label>
+<textarea class="form-control" id="description" name="description">{{ procedure['description'] }}</textarea>
+</div>
+</div>
             {% set section_index = section_index + 1 %}
 
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Applications Impactées</label>
-                    <div class="mb-3">
-                        <select class="form-select" id="application_select">
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Applications Impactées</label>
+<div class="mb-3">
+<select class="form-select" id="application_select">
                             {% for app in applications %}
                                 <option value="{{ app.id }}">{{ app.nom }}</option>
                             {% endfor %}
                         </select>
-                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="add_app_btn">Ajouter</button>
-                    </div>
-                    <div id="app_list" class="mb-2 d-flex flex-wrap align-items-center">
+<button class="btn btn-sm btn-outline-primary mt-2" id="add_app_btn" type="button">Ajouter</button>
+</div>
+<div class="mb-2 d-flex flex-wrap align-items-center" id="app_list">
                         {% for app in applications_associees %}
                             <div class="d-flex align-items-center me-2 mb-2" id="app-wrapper-{{ app.id }}">
-                                <span class="badge p-2" style="background-color: {{ app.couleur }}; color: white;">{{ app.nom }}</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger ms-1" style="padding: 2px 6px; font-size: 0.8rem;" onclick="removeApp('{{ app.id }}')">✖</button>
-                                <input type="hidden" name="application_id[]" value="{{ app.id }}" id="input-app-{{ app.id }}">
-                            </div>
+<span class="badge p-2" style="background-color: {{ app.couleur }}; color: white;">{{ app.nom }}</span>
+<button class="btn btn-sm btn-outline-danger ms-1" onclick="removeApp('{{ app.id }}')" style="padding: 2px 6px; font-size: 0.8rem;" type="button">✖</button>
+<input id="input-app-{{ app.id }}" name="application_id[]" type="hidden" value="{{ app.id }}"/>
+</div>
                         {% endfor %}
                     </div>
-                </div>
-            </div>
+</div>
+</div>
 
             {% set section_index = section_index + 1 %}
 
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Acteur</label>
-                    <input type="text" class="form-control" name="acteur" value="{{ procedure['acteur'] }}">
-                </div>
-            </div>
-            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Validateur</label>
-                    <input type="text" class="form-control" name="verificateur" value="{{ procedure['verificateur'] }}">
-                </div>
-            </div>
-            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Résolution</label>
-                    <textarea class="form-control" name="protocole_resolution" id="protocole_resolution">{{ procedure['protocole_resolution'] }}</textarea>
-                </div>
-            </div>
-
-            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Vérification</label>
-                    <textarea class="form-control" name="protocole_verification" id="protocole_verification">{{ procedure['protocole_verification'] }}</textarea>
-                </div>
-            </div>
-
-            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Base de Données Impactée</label>
-                    <textarea class="form-control" name="base_donnees">{{ procedure['base_donnees'] }}</textarea>
-                </div>
-            </div>
-
-            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Référence Ticket</label>
-                    <input type="text" class="form-control" name="reference_ticket" value="{{ procedure['reference_ticket'] }}">
-                </div>
-            </div>
-
-            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
-                <div class="card-body">
-                    <label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Pièces Jointes</label>
-                    <input type="file" class="form-control" name="pieces_jointes">
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-primary">Sauvegarder</button>
-                <a href="{{ url_for('home') }}" class="btn btn-secondary">Annuler</a>
-            </div>
-        </form>
-    </div>
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Acteur</label>
+<input class="form-control" name="acteur" type="text" value="{{ procedure['acteur'] }}"/>
+</div>
+</div>
+<div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Validateur</label>
+<input class="form-control" name="verificateur" type="text" value="{{ procedure['verificateur'] }}"/>
+</div>
+</div>
+<div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Résolution</label>
+<textarea class="form-control" id="protocole_resolution" name="protocole_resolution">{{ procedure['protocole_resolution'] }}</textarea>
+</div>
+</div>
+<div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Vérification</label>
+<textarea class="form-control" id="protocole_verification" name="protocole_verification">{{ procedure['protocole_verification'] }}</textarea>
+</div>
+</div>
+<div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Base de Données Impactée</label>
+<textarea class="form-control" name="base_donnees">{{ procedure['base_donnees'] }}</textarea>
+</div>
+</div>
+<div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Référence Ticket</label>
+<input class="form-control" name="reference_ticket" type="text" value="{{ procedure['reference_ticket'] }}"/>
+</div>
+</div>
+<div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+<div class="card-body">
+<label class="form-label text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Pièces Jointes</label>
+<input class="form-control" name="pieces_jointes" type="file"/>
+<div class="mt-3">
+        {% if procedure["pieces_jointes"] %}
+        <label class="form-label">📎 Pièces jointes existantes :</label>
+<ul>
+            {% for fichier in procedure["pieces_jointes"].split(";") if fichier %}
+                <li>
+<a href="{{ url_for('download_file', filename=fichier) }}" target="_blank">
+                        {{ fichier.split("_", 1)[1] if "_" in fichier else fichier }}
+                    </a>
+</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        </div></div>
+</div>
+<div class="d-flex justify-content-between">
+<button class="btn btn-primary" type="submit">Sauvegarder</button>
+<a class="btn btn-secondary" href="{{ url_for('home') }}">Annuler</a>
+</div>
+</form>
+</div>
 </div>
 <script>
     const champsCKEditor = ['description', 'protocole_resolution', 'protocole_verification'];
