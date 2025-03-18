@@ -379,10 +379,10 @@ def edit_procedure(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ? Récupérer la procédure avec les bonnes colonnes
+    # ✅ Récupérer la procédure avec les bonnes colonnes
     cursor.execute("""
-        SELECT id, titre, mots_cles, description, reference_ticket, base_donnees, 
-               protocole_resolution, protocole_verification, 
+        SELECT id, titre, mots_cles, description, reference_ticket, base_donnees,
+               protocole_resolution, protocole_verification,
                acteur, verificateur, utilisateur, pieces_jointes, statut
         FROM procedures WHERE id = %s
     """, (id,))
@@ -398,26 +398,40 @@ def edit_procedure(id):
         protocole_verification = request.form['protocole_verification']
         applications = request.form.getlist('application_id[]')
 
-        # ? S'assurer que le statut est toujours défini et ne peut pas être NULL
         ancien_statut = procedure['statut'] if procedure['statut'] else "À valider"
         nouveau_statut = "À valider" if ancien_statut in ["Rejetée", "Validée", "À vérifier", None] else ancien_statut
 
+        # ✅ Gestion des nouvelles pièces jointes
+        fichiers_nouveaux = []
+        if 'pieces_jointes' in request.files:
+            for file in request.files.getlist('pieces_jointes'):
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    unique_filename = str(uuid.uuid4()) + '_' + filename
+                    upload_file_to_ftp(file.stream, unique_filename)
+                    fichiers_nouveaux.append(unique_filename)
+
+        ancien_pj = procedure['pieces_jointes'] if procedure['pieces_jointes'] else ''
+        ancienne_liste = ancien_pj.split(";") if ancien_pj else []
+        nouvelle_liste = ancienne_liste + fichiers_nouveaux
+        pieces_jointes_str = ';'.join(filter(None, nouvelle_liste))
+
         cursor.execute("""
-            UPDATE procedures 
-            SET titre=%s, mots_cles=%s, description=%s, reference_ticket=%s, base_donnees=%s, 
-                protocole_resolution=%s, protocole_verification=%s, statut=%s
+            UPDATE procedures
+            SET titre=%s, mots_cles=%s, description=%s, reference_ticket=%s, base_donnees=%s,
+                protocole_resolution=%s, protocole_verification=%s, statut=%s, pieces_jointes=%s
             WHERE id=%s
-        """, (titre, mots_cles, description, reference_ticket, base_donnees, protocole_resolution, protocole_verification, nouveau_statut, id))
+        """, (
+            titre, mots_cles, description, reference_ticket, base_donnees,
+            protocole_resolution, protocole_verification, nouveau_statut,
+            pieces_jointes_str, id
+        ))
 
-        # ? Vérification et insertion des applications sélectionnées
-        # ✅ Supprimer les anciennes associations
+        # ✅ Mise à jour des applications liées
         cursor.execute("DELETE FROM procedure_applications WHERE procedure_id = %s", (id,))
-
-        # ✅ Réinsérer les applications envoyées par le formulaire
         for app_id in applications:
             if app_id.strip():
-                cursor.execute("INSERT INTO procedure_applications (procedure_id, application_id) VALUES (%s, %s)",
-                               (id, app_id.strip()))
+                cursor.execute("INSERT INTO procedure_applications (procedure_id, application_id) VALUES (%s, %s)", (id, app_id.strip()))
 
         conn.commit()
         cursor.close()
@@ -438,7 +452,6 @@ def edit_procedure(id):
     cursor.close()
     conn.close()
 
-    # Construction du dictionnaire couleurs_dict avant le render_template
     couleurs_dict = {str(app['id']): app['couleur'] for app in applications}
 
     return render_template('edit_procedure.html',
@@ -446,7 +459,6 @@ def edit_procedure(id):
                            applications=applications,
                            applications_associees=applications_associees,
                            couleurs_dict=couleurs_dict)
-
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_procedure():
@@ -822,16 +834,18 @@ def gestion_a_verifier():
     cursor = conn.cursor()
 
     query = """
-        SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket, 
-               COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications, 
-               COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs, 
-               p.statut, p.utilisateur, p.verificateur
+        SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
+           COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications,
+           COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs,
+           p.statut, p.utilisateur, p.verificateur
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
         WHERE p.statut = 'À vérifier'
-        AND p.verificateur = %s
-        AND (p.est_supprime = 0 OR p.est_supprime IS NULL)
+          AND p.verificateur = %s
+          AND (p.est_supprime = 0 OR p.est_supprime IS NULL)
+        GROUP BY p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
+                 p.statut, p.utilisateur, p.verificateur
     """
     cursor.execute(query, (session['username'],))
 
@@ -925,7 +939,9 @@ def gestion_a_valider():
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
         WHERE p.statut = 'À valider'
-        AND (p.est_supprime = 0 OR p.est_supprime IS NULL)
+          AND (p.est_supprime = 0 OR p.est_supprime IS NULL)
+        GROUP BY p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
+                 p.statut, p.utilisateur
     """)
     procedures = cursor.fetchall()
     cursor.close()

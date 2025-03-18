@@ -51,7 +51,13 @@
                 </div>
             </div>
             {% set section_index = section_index + 1 %}
-
+            <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
+                <div class="card-body">
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Référence Ticket</h5>
+                    <p>{{ procedure["reference_ticket"] if procedure["reference_ticket"] else 'Aucune référence' }}</p>
+                </div>
+            </div>
+            {% set section_index = section_index + 1 %}
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
                 <div class="card-body">
                     <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Protocole de Résolution</h5>
@@ -70,7 +76,7 @@
 
             <div class="card shadow-sm mb-3" style="border-left: 5px solid {{ couleurs[section_index % couleurs_count] }};">
                 <div class="card-body">
-                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Acteur</h5>
+                    <h5 class="text-white p-2 rounded" style="background-color: {{ couleurs[section_index % couleurs_count] }};">Auteur</h5>
                     <p>{{ procedure["acteur"] if procedure["acteur"] else 'Non spécifié' }}</p>
                 </div>
             </div>
