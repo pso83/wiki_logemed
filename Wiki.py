@@ -219,14 +219,13 @@ def home():
         search_keywords = search_keywords.strip().lower()
 
         if search_keywords.startswith("#"):
-            # ✅ Recherche uniquement dans "mots_cles" avec REGEXP
+            # ✅ Recherche uniquement dans "mots_cles" avec LIKE plus souple
             keyword_conditions = " OR ".join(
-                ["LOWER(p.mots_cles) REGEXP %s" for kw in search_keywords.split("#") if kw.strip()])
+                ["LOWER(p.mots_cles) LIKE %s" for kw in search_keywords.split("#") if kw.strip()])
             filters.append(f"({keyword_conditions})")
-            params.extend([f"\\b{kw}\\b" for kw in search_keywords.split("#") if kw.strip()])
-
+            params.extend([f"%{kw.strip()}%" for kw in search_keywords.split("#") if kw.strip()])
         else:
-            # ✅ Recherche générale dans plusieurs colonnes avec LIKE
+            # ✅ Recherche globale dans plusieurs champs
             keyword_conditions = " OR ".join([
                 "LOWER(p.mots_cles) LIKE %s",
                 "LOWER(p.titre) LIKE %s",
@@ -235,7 +234,7 @@ def home():
                 "LOWER(p.protocole_verification) LIKE %s"
             ])
             filters.append(f"({keyword_conditions})")
-            params.extend([f"%{search_keywords}%" for _ in range(5)])  # ✅ Applique %LIKE%
+            params.extend([f"%{search_keywords}%" for _ in range(5)])
 
     if search_application and search_application.isdigit():
         filters.append(
