@@ -379,7 +379,7 @@ def edit_procedure(id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ✅ Récupérer la procédure avec les bonnes colonnes
+    # ✅ Récupérer la procédure
     cursor.execute("""
         SELECT id, titre, mots_cles, description, reference_ticket, base_donnees,
                protocole_resolution, protocole_verification,
@@ -387,6 +387,10 @@ def edit_procedure(id):
         FROM procedures WHERE id = %s
     """, (id,))
     procedure = cursor.fetchone()
+
+    if not procedure:
+        flash("❌ Procédure introuvable.", "danger")
+        return redirect(url_for('home'))
 
     if request.method == 'POST':
         titre = request.form['titre']
@@ -396,6 +400,8 @@ def edit_procedure(id):
         base_donnees = request.form['base_donnees']
         protocole_resolution = request.form['protocole_resolution']
         protocole_verification = request.form['protocole_verification']
+        verificateur = request.form['verificateur']
+        acteur = request.form['acteur']
         applications = request.form.getlist('application_id[]')
 
         ancien_statut = procedure['statut'] if procedure['statut'] else "À valider"
@@ -419,12 +425,13 @@ def edit_procedure(id):
         cursor.execute("""
             UPDATE procedures
             SET titre=%s, mots_cles=%s, description=%s, reference_ticket=%s, base_donnees=%s,
-                protocole_resolution=%s, protocole_verification=%s, statut=%s, pieces_jointes=%s
+                protocole_resolution=%s, protocole_verification=%s, verificateur=%s, acteur=%s,
+                statut=%s, pieces_jointes=%s
             WHERE id=%s
         """, (
             titre, mots_cles, description, reference_ticket, base_donnees,
-            protocole_resolution, protocole_verification, nouveau_statut,
-            pieces_jointes_str, id
+            protocole_resolution, protocole_verification, verificateur, acteur,
+            nouveau_statut, pieces_jointes_str, id
         ))
 
         # ✅ Mise à jour des applications liées
@@ -436,8 +443,10 @@ def edit_procedure(id):
         conn.commit()
         cursor.close()
         conn.close()
+        flash("✅ Procédure modifiée avec succès.", "success")
         return redirect(url_for('home'))
 
+    # ✅ Charger les données pour affichage dans le formulaire
     cursor.execute("SELECT id, nom, couleur FROM applications")
     applications = cursor.fetchall()
 
@@ -449,6 +458,14 @@ def edit_procedure(id):
     """, (id,))
     applications_associees = cursor.fetchall()
 
+    # ✅ Charger la liste des vérificateurs dynamiquement
+    cursor.execute("""
+        SELECT u.utilisateur FROM utilisateurs u
+        JOIN services s ON u.service_id = s.id
+        WHERE s.nom = 'direction' OR s.id = (SELECT service_id FROM utilisateurs WHERE id = %s)
+    """, (session['user_id'],))
+    verificateurs = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -458,7 +475,8 @@ def edit_procedure(id):
                            procedure=procedure,
                            applications=applications,
                            applications_associees=applications_associees,
-                           couleurs_dict=couleurs_dict)
+                           couleurs_dict=couleurs_dict,
+                           verificateurs=verificateurs)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_procedure():
