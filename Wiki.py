@@ -177,40 +177,15 @@ def home():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # 🔸 Récupérer les procédures (avec recherche si présente)
     search_keywords = request.args.get('search_keywords', '').strip()
-    search_application = request.args.get('search_application', '').strip()
-    search_statut = request.args.get('search_statut', '').strip()
-    order_by = request.args.get('order_by', 'desc').strip()  # desc par défaut
+    search_application = request.args.get('search_application', '')
+    search_statut = request.args.get('search_statut', '')
+    order_by = request.args.get('order_by', 'desc')
 
-    # ? Requête principale pour récupérer les procédures
-    query = """
-        SELECT 
-            p.id, 
-            p.titre, 
-            p.description, 
-            p.mots_cles, 
-            p.reference_ticket, 
-            (SELECT GROUP_CONCAT(DISTINCT a.nom ORDER BY a.id SEPARATOR ', ') 
-             FROM procedure_applications pa 
-             JOIN applications a ON pa.application_id = a.id 
-             WHERE pa.procedure_id = p.id) AS applications,
-            p.statut, 
-            p.vues,  
-            (SELECT COUNT(*) FROM votes v WHERE v.procedure_id = p.id AND v.vote_type = 'like') AS likes,
-            (SELECT COUNT(*) FROM votes v WHERE v.procedure_id = p.id AND v.vote_type = 'dislike') AS dislikes,
-            (SELECT GROUP_CONCAT(DISTINCT a.couleur ORDER BY a.id SEPARATOR ', ') 
-             FROM procedure_applications pa 
-             JOIN applications a ON pa.application_id = a.id 
-             WHERE pa.procedure_id = p.id) AS couleurs,
-            p.utilisateur  
-        FROM procedures p
-        WHERE (p.est_supprime = 0 OR p.est_supprime IS NULL)
-    """
-
-    params = []
     filters = []
+    params = []
 
-    # ✅ Recherche combinée : #mot => mots_cles, mot => tous champs
     if search_keywords:
         search_words = search_keywords.strip().split()
         motscles_keywords = [kw[1:].lower() for kw in search_words if kw.startswith("#")]
@@ -234,32 +209,38 @@ def home():
                 params.extend([f"%{kw}%"] * 5)
             filters.append(" AND ".join(global_conditions))
 
-    if search_application and search_application.isdigit():
-        filters.append(
-            "p.id IN (SELECT pa2.procedure_id FROM procedure_applications pa2 WHERE pa2.application_id = %s)")
+    if search_application:
+        filters.append("a.id = %s")
         params.append(search_application)
 
     if search_statut:
         filters.append("p.statut = %s")
         params.append(search_statut)
 
+    where_clause = "WHERE (p.est_supprime IS NULL OR p.est_supprime = 0)"
     if filters:
-        query += " AND " + " AND ".join(filters)
+        where_clause += " AND " + " AND ".join(filters)
 
-    query += " GROUP BY p.id"
+    query = f'''
+        SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
+               COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications,
+               COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs,
+               p.statut, p.utilisateur, p.vues, p.verificateur,
+               COALESCE(p.likes, 0) AS likes, COALESCE(p.dislikes, 0) AS dislikes,
+               CASE WHEN EXISTS (
+                    SELECT 1 FROM motif_rejet WHERE procedure_id = p.id
+               ) THEN 1 ELSE 0 END AS a_un_motif
+        FROM procedures p
+        LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
+        LEFT JOIN applications a ON pa.application_id = a.id
+        {where_clause}
+        GROUP BY p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
+                 p.statut, p.utilisateur, p.vues, p.verificateur, p.likes, p.dislikes
+        ORDER BY p.id {order_by.upper()}
+    '''
 
-    if order_by.lower() == 'asc':
-        query += " ORDER BY p.id ASC"
-    else:
-        query += " ORDER BY p.id DESC"
-
-    try:
-        cursor.execute(query, tuple(params))  # ✅ Assure que params est un tuple pour éviter l'erreur
-        procedures = cursor.fetchall()
-
-    except Exception as e:
-        print(f"?? ERREUR SQL : {e}")
-        procedures = []
+    cursor.execute(query, tuple(params))
+    procedures = cursor.fetchall()
 
     cursor.execute("SELECT id, nom FROM applications")
     applications = cursor.fetchall()
@@ -278,43 +259,31 @@ def home():
             procedure['protocole_verification']) if 'protocole_verification' in procedure and procedure[
             'protocole_verification'] else ''
 
-    # ? Récupérer le nombre de procédures "À valider" pour les modérateurs
-    cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'À valider'")
-    procedures_a_valider_row = cursor.fetchone()
-    if procedures_a_valider_row is None:
-        procedures_a_valider_row = [0]
-    procedures_a_valider = int(procedures_a_valider_row['COUNT(*)']) if procedures_a_valider_row else 0
+    cursor.execute("SELECT COUNT(*) as nb FROM procedures WHERE verificateur = %s AND statut = 'À vérifier'", (session['username'],))
+    row = cursor.fetchone()
+    procedures_a_verifier = int(row['nb']) if row and row['nb'] is not None else 0
 
-    # ? Récupérer le nombre de procédures "Rejetées" pour l'utilisateur connecté
-    cursor.execute("SELECT COUNT(*) FROM procedures WHERE statut = 'Rejetée' AND utilisateur = %s",
-                   (session['username'],))
-    procedures_a_corriger_row = cursor.fetchone()
-    if procedures_a_corriger_row is None:
-        procedures_a_corriger_row = [0]
-    procedures_a_corriger = int(procedures_a_corriger_row['COUNT(*)']) if procedures_a_corriger_row else 0
+    cursor.execute("SELECT COUNT(*) FROM procedures WHERE utilisateur = %s AND statut = 'Rejetée'", (session['username'],))
+    procedures_a_corriger = cursor.fetchone()['COUNT(*)']
 
-    # Récupérer le nombre de procédure à vérifier pour le vérificateur
-    cursor.execute("""
-        SELECT COUNT(*) FROM procedures 
-        WHERE verificateur = %s AND statut = 'À vérifier'
-    """, (session['username'],))
-    procedures_a_verifier = cursor.fetchone()['COUNT(*)']
+    cursor.execute(
+        "SELECT COUNT(*) as nb FROM procedures WHERE statut = 'À valider' AND (est_supprime IS NULL OR est_supprime = 0)")
+    row = cursor.fetchone()
 
-    cursor.close()
+    procedures_a_valider = int(row['nb']) if row and row['nb'] is not None else 0
+
     conn.close()
 
-    return render_template(
-        'home.html',
-        procedures=procedures,
-        applications=applications,
-        search_keywords=search_keywords,
-        search_application=search_application,
-        search_statut=search_statut,
-        order_by=order_by,
-        procedures_a_valider=procedures_a_valider,
-        procedures_a_corriger=procedures_a_corriger,
-        procedures_a_verifier=procedures_a_verifier
-    )
+    return render_template('home.html',
+                           procedures=procedures,
+                           search_keywords=search_keywords,
+                           search_application=search_application,
+                           search_statut=search_statut,
+                           order_by=order_by,
+                           applications=applications,
+                           procedures_a_verifier=procedures_a_verifier,
+                           procedures_a_corriger=procedures_a_corriger,
+                           procedures_a_valider=procedures_a_valider)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -846,7 +815,7 @@ def restore_procedure(id):
 def gestion_a_verifier():
     if 'user_id' not in session or not session.get("est_moderateur"):
         logging.debug("Accès refusé : utilisateur non connecté ou non modérateur")
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -942,13 +911,16 @@ def deleted_procedures():
 
 @app.route('/gestion_a_valider')
 def gestion_a_valider():
-    if 'user_id' not in session or not session.get("est_admin"):
-        return redirect(url_for('login'))
+    if 'user_id' not in session or not (session.get("est_admin") or session.get("service") == "direction"):
+        flash("⛔ Accès réservé aux administrateurs ou au service direction", "danger")
+        return redirect(url_for('home'))
+
+    filtre = request.args.get('filtre', 'toutes')  # par défaut, afficher tout
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    base_query = '''
         SELECT p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
                COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications,
                COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs,
@@ -956,16 +928,30 @@ def gestion_a_valider():
         FROM procedures p
         LEFT JOIN procedure_applications pa ON p.id = pa.procedure_id
         LEFT JOIN applications a ON pa.application_id = a.id
+        LEFT JOIN utilisateurs u ON u.utilisateur = p.utilisateur
+        LEFT JOIN services s ON s.id = u.service_id
         WHERE p.statut = 'À valider'
-          AND (p.est_supprime = 0 OR p.est_supprime IS NULL)
+          AND (p.est_supprime IS NULL OR p.est_supprime = 0)
+    '''
+
+    if filtre == 'mes':
+        base_query += " AND (s.id = %s OR s.nom = 'direction')"
+        params = (session.get('service_id'),)
+    else:
+        params = ()
+
+    base_query += '''
         GROUP BY p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
                  p.statut, p.utilisateur
-    """)
+    '''
+
+    cursor.execute(base_query, params)
     procedures = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
-    return render_template('gestion_a_valider.html', procedures=procedures)
+    return render_template('gestion_a_valider.html', procedures=procedures, filtre=filtre)
 
 @app.route('/like/<int:id>', methods=['POST'])
 def like_procedure(id):

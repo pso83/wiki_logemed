@@ -21,6 +21,14 @@
         <h2 class="page-title m-0">Procédures à Valider (Admin)</h2>
         <a href="/" class="btn btn-outline-secondary">Retour à l'accueil</a>
     </div>
+    <div class="d-flex justify-content-end mb-3">
+      <form method="get" action="{{ url_for('gestion_a_valider') }}">
+        <select class="form-select form-select-sm" name="filtre" onchange="this.form.submit()" style="width: auto; display: inline-block;">
+          <option value="toutes" {% if filtre != 'mes' %}selected{% endif %}>Toutes les procédures</option>
+          <option value="mes" {% if filtre == 'mes' %}selected{% endif %}>Procédures de mon groupe</option>
+        </select>
+      </form>
+    </div>
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
             <tr>

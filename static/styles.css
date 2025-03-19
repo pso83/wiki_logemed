@@ -245,3 +245,21 @@ body {
     cursor: zoom-in;
     transition: transform 0.2s ease;
 }
+#scrollTopBtn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 999;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 50%;
+  font-size: 24px;
+  text-align: center;
+  text-decoration: none;
+  display: none;
+}
+
+#scrollTopBtn:hover {
+  background-color: #0056b3;
+}
