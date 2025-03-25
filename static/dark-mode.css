@@ -230,3 +230,48 @@ body.dark-mode {
     margin: 0 auto;
     object-fit: contain;
 }
+/* Mode sombre - boutons vote par défaut */
+.dark-mode .vote-button {
+  background-color: transparent !important;
+  border-color: #666 !important;
+  color: #ccc !important;
+}
+
+/* Bouton activé like */
+.dark-mode .vote-button.active-like {
+  background-color: #198754 !important;
+  border-color: #198754 !important;
+  color: white !important;
+}
+
+/* Bouton activé dislike */
+.dark-mode .vote-button.active-dislike {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: white !important;
+}
+/* Mode sombre - boutons par défaut = contour */
+.dark-mode .vote-button.btn-outline-success {
+  background-color: transparent !important;
+  border-color: #198754 !important;
+  color: #198754 !important;
+}
+
+.dark-mode .vote-button.btn-outline-danger {
+  background-color: transparent !important;
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+}
+
+/* Boutons activés (après vote) */
+.dark-mode .vote-button.active-like {
+  background-color: #198754 !important;
+  border-color: #198754 !important;
+  color: white !important;
+}
+
+.dark-mode .vote-button.active-dislike {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: white !important;
+}

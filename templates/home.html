@@ -137,6 +137,9 @@
                                 {% endif %}">
                                 {{ procedure['statut'] }}
                             </span>
+                            {% if procedure['a_des_pj'] %}
+                                <span class="pj-icon" title="Pièce jointe">📎</span>
+                            {% endif %}
                             {% if procedure['statut'] == 'Rejetée' and procedure.get('a_un_motif') %}
                             <a href="{{ url_for('motif_rejet', procedure_id=procedure['id']) }}"
                                class="badge text-decoration-none"
@@ -177,15 +180,13 @@
                             <!-- ✅ J'aime / J'aime pas -->
                             <div class="d-flex align-items-center justify-content-center like-buttons">
                                 <button id="like-{{ procedure.id }}"
-                                        class="btn btn-sm btn-outline-success vote-button"
-                                        data-id="{{ procedure.id }}"
-                                        data-vote-type="like">
+                                        class="btn btn-sm vote-button {% if votes_user_map.get(procedure.id) == 'like' %}active-like{% else %}btn-outline-success{% endif %}"
+                                        data-id="{{ procedure.id }}" data-vote-type="like">
                                     👍 <span id="likes-count-{{ procedure.id }}">{{ procedure.likes }}</span>
                                 </button>
                                 <button id="dislike-{{ procedure.id }}"
-                                        class="btn btn-sm btn-outline-danger vote-button"
-                                        data-id="{{ procedure.id }}"
-                                        data-vote-type="dislike">
+                                        class="btn btn-sm vote-button {% if votes_user_map.get(procedure.id) == 'dislike' %}active-dislike{% else %}btn-outline-danger{% endif %}"
+                                        data-id="{{ procedure.id }}" data-vote-type="dislike">
                                     👎 <span id="dislikes-count-{{ procedure.id }}">{{ procedure.dislikes }}</span>
                                 </button>
                             </div>
@@ -306,3 +307,4 @@ setInterval(refreshAlerts, 10000);  // ? Rafraîchir les alertes toutes les 10 s
 
 </body>
 </html>
+<!-- Fin -->

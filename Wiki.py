@@ -226,7 +226,9 @@ def home():
                COALESCE(CAST(GROUP_CONCAT(a.nom SEPARATOR ', ') AS CHAR), '') AS applications,
                COALESCE(CAST(GROUP_CONCAT(a.couleur SEPARATOR ', ') AS CHAR), '') AS couleurs,
                p.statut, p.utilisateur, p.vues, p.verificateur,
-               COALESCE(p.likes, 0) AS likes, COALESCE(p.dislikes, 0) AS dislikes,
+               LENGTH(p.pieces_jointes) > 0 AS a_des_pj,
+               (SELECT COUNT(*) FROM votes v WHERE v.procedure_id = p.id AND v.vote_type = 'like') AS likes,
+               (SELECT COUNT(*) FROM votes v WHERE v.procedure_id = p.id AND v.vote_type = 'dislike') AS dislikes,
                CASE WHEN EXISTS (
                     SELECT 1 FROM motif_rejet WHERE procedure_id = p.id
                ) THEN 1 ELSE 0 END AS a_un_motif
@@ -235,7 +237,7 @@ def home():
         LEFT JOIN applications a ON pa.application_id = a.id
         {where_clause}
         GROUP BY p.id, p.titre, p.description, p.mots_cles, p.reference_ticket,
-                 p.statut, p.utilisateur, p.vues, p.verificateur, p.likes, p.dislikes
+                 p.statut, p.utilisateur, p.vues, p.verificateur
         ORDER BY p.id {order_by.upper()}
     '''
 
@@ -270,6 +272,12 @@ def home():
         "SELECT COUNT(*) as nb FROM procedures WHERE statut = 'À valider' AND (est_supprime IS NULL OR est_supprime = 0)")
     row = cursor.fetchone()
 
+    cursor.execute("SELECT procedure_id, vote_type FROM votes WHERE utilisateur = %s", (session['username'],))
+    votes_utilisateur = cursor.fetchall()
+
+    # On crée un dictionnaire : { procedure_id : 'like' ou 'dislike' }
+    votes_user_map = {row['procedure_id']: row['vote_type'] for row in votes_utilisateur}
+
     procedures_a_valider = int(row['nb']) if row and row['nb'] is not None else 0
 
     conn.close()
@@ -283,7 +291,8 @@ def home():
                            applications=applications,
                            procedures_a_verifier=procedures_a_verifier,
                            procedures_a_corriger=procedures_a_corriger,
-                           procedures_a_valider=procedures_a_valider)
+                           procedures_a_valider=procedures_a_valider,
+                           votes_user_map=votes_user_map)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -869,7 +878,7 @@ def correct_procedure(id):
     cursor = conn.cursor()
 
     # Vérifier si l'utilisateur est bien l'auteur de la procédure
-    cursor.execute("SELECT utilisateur FROM procedures WHERE id = %s", (id,))
+    cursor.execute("UPDATE procedures SET statut = 'À vérifier' WHERE id = %s", (id,))
     utilisateur = cursor.fetchone()
 
     if utilisateur and utilisateur[0] == session.get("username"):

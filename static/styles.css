@@ -263,3 +263,8 @@ body {
 #scrollTopBtn:hover {
   background-color: #0056b3;
 }
+.pj-icon {
+    font-size: 1.2em;
+    margin-left: 6px;
+    vertical-align: middle;
+}
