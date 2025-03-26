@@ -37,9 +37,9 @@ def allowed_file(filename):
 app.secret_key = 'your_secret_key'  # Nécessaire pour gérer les sessions
 
 # Configuration de la base de données
-DB_HOST = '194.164.60.164'
-DB_USER = 'devlog'
-DB_PASSWORD = '123456Sou_log'
+DB_HOST = '192.168.110.14'
+DB_USER = 'asoulat'
+DB_PASSWORD = '123@log'
 DB_NAME = 'wiki_db'
 
 # Configuration FTP
@@ -56,7 +56,8 @@ def get_db_connection():
         passwd=DB_PASSWORD,
         db=DB_NAME,
         charset='utf8mb4',
-        cursorclass = MySQLdb.cursors.DictCursor  # ? Correction ici
+        cursorclass = MySQLdb.cursors.DictCursor,  # ? Correction ici
+        ssl={'ca': 'certif/DEV-14.pem'}
     )
 
 # Fonction pour formater les blocs de code
