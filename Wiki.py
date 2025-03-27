@@ -36,7 +36,7 @@ def allowed_file(filename):
 
 app.secret_key = 'your_secret_key'  # Nécessaire pour gérer les sessions
 
-# Configuration de la base de données
+# Configuration de la base de données pour logemed
 DB_HOST = '192.168.110.14'
 DB_USER = 'asoulat'
 DB_PASSWORD = '123@log'
