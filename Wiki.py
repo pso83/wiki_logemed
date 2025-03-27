@@ -14,7 +14,7 @@ import MySQLdb.cursors
 
 logging.getLogger('MARKDOWN').setLevel(logging.WARNING)
 
-# backend
+# backend avec integration docker
 app = Flask(__name__)
 
 # ? Activer le logging pour voir les routes disponibles
