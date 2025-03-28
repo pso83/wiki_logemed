@@ -37,9 +37,9 @@ def allowed_file(filename):
 app.secret_key = 'your_secret_key'  # Nécessaire pour gérer les sessions
 
 # Configuration de la base de données pour logemed 3
-DB_HOST = '192.168.110.14'
-DB_USER = 'asoulat'
-DB_PASSWORD = '123@log'
+DB_HOST = '192.168.110.14'      # '194.164.60.164
+DB_USER = 'asoulat'             # 'devlog'
+DB_PASSWORD = '123@log'         # '123456Sou_log
 DB_NAME = 'wiki_db'
 
 # Configuration FTP
